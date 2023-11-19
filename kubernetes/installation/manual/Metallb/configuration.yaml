@@ -1,0 +1,32 @@
+apiVersion: metallb.io/v1beta2
+kind: BGPPeer
+metadata:
+  name: sample
+  namespace: metallb-system
+spec:
+  myASN: 64500
+  peerASN: 64501
+  peerAddress: 172.16.1.210
+
+---
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: my-ip-pool
+  namespace: metallb-system
+spec:
+  addresses:
+  - 172.16.1.220-172.16.1.225
+
+---
+apiVersion: metallb.io/v1beta1
+kind: BGPAdvertisement
+metadata:
+  name: advertisement-configuration
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+  - my-ip-pool
+
+
+

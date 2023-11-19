@@ -14,7 +14,9 @@ For external IP, I selected MetalLB solution as following:
 - Router has been configured bgp and ecmp to load balance traffic among nodes
 
 After everything got set up and was green to test, I've created the nginx service to test
+
 truonghoangphuloc@phus-MacBook-Pro Metallb % kubectl get svc
+
 NAME         TYPE           CLUSTER-IP      EXTERNAL-IP    PORT(S)        AGE
 kubernetes   ClusterIP      10.96.0.1       <none>         443/TCP        3d2h
 nginx        LoadBalancer   10.107.90.218   172.16.1.220   80:32613/TCP   3s

@@ -24,7 +24,7 @@ nginx        LoadBalancer   10.107.90.218   172.16.1.220   80:32613/TCP   3s
 The External IP address assigned for this service is 172.16.1.220 which is in the list of defined IPs range
 
 On the router
-B>* 172.16.1.220/32 [20/0] via 172.16.1.201, eth0, weight 1, 00:00:20
+* B>* 172.16.1.220/32 [20/0] via 172.16.1.201, eth0, weight 1, 00:00:20
   *                        via 172.16.1.202, eth0, weight 1, 00:00:20
   *                        via 172.16.1.203, eth0, weight 1, 00:00:20
   *                        via 172.16.1.204, eth0, weight 1, 00:00:20

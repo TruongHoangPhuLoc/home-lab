@@ -73,10 +73,10 @@ After having several needed things set up, I re-ran the test and surprisingly, i
 
 # Does it actually improve performance?
 
-Now all nodes in my cluster are able to receive traffic balancing-distributed from router. I've already done  observation on what's going to be if I just want only one node receive traffic by rollback the hash to L3 or directly connecting to node port on specific node. The result was that it seemed not really important. It's still be able to handle the same number of requests as being handled by multiple nodes. So that in my opinion, it relates to redundancy more than improving performance because routing doesnt cost too much resources in my context.
+Now all nodes in my cluster are able to receive traffic balancing-distributed from router. I've already done  observation on what's going to be if I just want only one node to receive traffic by rollingback the hash to L3 or directly connecting to node port on specific node. The result seemed not to be really important. It still be able to handle the same number of requests as being handled by multiple nodes. So that in my opinion, it relates to redundancy more than improving performance because routing doesnt cost too much resources in my context.
 
 
-I've also increased the number of pods and re-checked again, and, the capacity of handling number of request was increased.
+I've also increased the number of pods and re-checked again, and, the capacity of handling number of requests was increased.
 
 # Several funny things I've learned
 
@@ -92,6 +92,6 @@ I've also increased the number of pods and re-checked again, and, the capacity o
 
 + Eventually, I found the the correct way that I had to use the set command in configure mode of router 
 
-There're the things that I've learned from this journey and they're all funny, useful and amazing to me. It's made me more interested when I found out something I've never been aware.
+There're the things that I've learned from this journey and they're all funny, useful and amazing to me. It's made me more interested when I find out something of which I've never been aware.
 
 

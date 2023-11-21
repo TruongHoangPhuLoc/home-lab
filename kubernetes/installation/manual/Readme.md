@@ -15,13 +15,7 @@ For external IP, I selected MetalLB solution as following:
 
 After everything got set up and was green to test, I've created the nginx service to test
 
-truonghoangphuloc@phus-MacBook-Pro Metallb % kubectl get svc
-
-NAME         TYPE           CLUSTER-IP      EXTERNAL-IP    PORT(S)        AGE
-
-kubernetes   ClusterIP      10.96.0.1       <none>         443/TCP        3d2h
-
-nginx        LoadBalancer   10.107.90.218   172.16.1.220   80:32613/TCP   3s
+![Alt text](svc.png)
 
 The External IP address assigned for this service is 172.16.1.220 which is in the list of defined IPs range
 
@@ -39,7 +33,7 @@ The router has learned the IP of nginx service from all nodes and being able to 
 For simplicity, I added static route on my host for testing
 172.16.1.220/32    172.16.1.210       UGSc           en0
 
-After doing some tests, I find that my cluster's able to handle about 12k connections (using ddostify to evaluate). When I increase the number of connections exceeding 12k, it starts to get errors.
+After doing some tests, I find that my cluster's able to handle about 12k request / 10 seconds (using ddosify to evaluate). When I increase the number of connections exceeding 12k requests, it starts to get errors.
 
 
 ![Alt text](result.png)
@@ -54,8 +48,29 @@ I was curious what is ecmp hashing and found this one:
 https://datatracker.ietf.org/doc/html/rfc2992
 
 
-It explained how ecmp works by. To be honest, I'm not good at math and not sure if my logic's true but it seems the more parameters we add into hash (source port and dest port in case L4), the chance of getting different regions that we have in result is higher
+It explained how ecmp works by. To be honest, I'm not good at math and not sure if my logic's true but it seems the more parameters we add into hash (source port and dest port in case L4), the higher the chance of getting different regions(each region's equivalent to a node) that we have in result is.
 
 Lets re-test and increase the number of connections
 
 At this time, the nodes all receive traffic from router to it as expected
+
+#I've redone the test
+
+Last time, I said that my cluster was able to handle about 12k connections but each test had inconsistent result. I supposed that I was running the ddosify container in my mac, which had wireless connection. The flow of the test at that time was:
+
+![Alt text](old-flow.png)
+
+My assumption was the wireless connection is half-duplex and it could degrade result of tests. I decided to spin up ubuntu-desktop vm which has a wired connection to ISP modem
+
+![Alt text](new-flow.png)
+
+
+After having several needed things set up, I re-ran the test and surprisingly, it's now can handle about up to 100k requests / 10 seconds (10k requests / second) 🤣. Now I'm able to believe my assumption is fairly exact
+
+![Alt text](new-result.png)
+
+#Final Thoughts
+
+Now all nodes in my cluster are able to receive traffic balancing-distributed from router. I've already done  observation on what's going to be if I just want only one node receive traffic by rollback the hash to L3 or directly connecting to node port on specific node. The result was that it seemed not really important. It's still be able to handle the same number of requests as being handled by multiple nodes. So that in my opinion, it relates to redundancy more than improving performance because routing doesnt cost too much resources in my context 
+
+

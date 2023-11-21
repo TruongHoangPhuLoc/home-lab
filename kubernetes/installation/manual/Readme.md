@@ -54,7 +54,7 @@ Lets re-test and increase the number of connections
 
 At this time, the nodes all receive traffic from router to it as expected
 
-#I've redone the test
+# I've redone the test
 
 Last time, I said that my cluster was able to handle about 12k connections but each test had inconsistent result. I supposed that I was running the ddosify container in my mac, which had wireless connection. The flow of the test at that time was:
 
@@ -69,8 +69,9 @@ After having several needed things set up, I re-ran the test and surprisingly, i
 
 ![Alt text](new-result.png)
 
-#Final Thoughts
+# Does it actually improve performance?
 
-Now all nodes in my cluster are able to receive traffic balancing-distributed from router. I've already done  observation on what's going to be if I just want only one node receive traffic by rollback the hash to L3 or directly connecting to node port on specific node. The result was that it seemed not really important. It's still be able to handle the same number of requests as being handled by multiple nodes. So that in my opinion, it relates to redundancy more than improving performance because routing doesnt cost too much resources in my context 
+Now all nodes in my cluster are able to receive traffic balancing-distributed from router. I've already done  observation on what's going to be if I just want only one node receive traffic by rollback the hash to L3 or directly connecting to node port on specific node. The result was that it seemed not really important. It's still be able to handle the same number of requests as being handled by multiple nodes. So that in my opinion, it relates to redundancy more than improving performance because routing doesnt cost too much resources in my context.
+I've also increased the number of pods and re-checked again, and, the capacity of handling number of request was increased.  
 
 

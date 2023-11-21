@@ -15,6 +15,8 @@ For external IP, I selected MetalLB solution as following:
 
 After everything got set up and was green to test, I've created the nginx service to test
 
+![Alt text](cluster-status.png)
+
 ![Alt text](svc.png)
 
 The External IP address assigned for this service is 172.16.1.220 which is in the list of defined IPs range
@@ -72,6 +74,24 @@ After having several needed things set up, I re-ran the test and surprisingly, i
 # Does it actually improve performance?
 
 Now all nodes in my cluster are able to receive traffic balancing-distributed from router. I've already done  observation on what's going to be if I just want only one node receive traffic by rollback the hash to L3 or directly connecting to node port on specific node. The result was that it seemed not really important. It's still be able to handle the same number of requests as being handled by multiple nodes. So that in my opinion, it relates to redundancy more than improving performance because routing doesnt cost too much resources in my context.
-I've also increased the number of pods and re-checked again, and, the capacity of handling number of request was increased.  
+
+
+I've also increased the number of pods and re-checked again, and, the capacity of handling number of request was increased.
+
+# Several funny things I've learned
+
++ Firstly, as you've probably noticed, my cluster has a special node (k8s-additional-worker) which is a rocky linux node. I wanted my cluster to have varying distros and it turns out more difficult than I thought. 
+
+The rest of my cluster is ubuntu nodes. When they're ready to have applications deployed on them, I decided to add rocky node to. I was experiencing the rocky node in NotReady state. Then, I googled and it turned out the problem is the configuration of resolve. The boostrap phase's going to detect whether the system's using systemd-resolve to configure kubelet. Systemd-resolve is default configured on ubuntu and rocky is otherwise. 
+
+Finally, I have to hardcode the configuration of kubelet on my rocky node to use /etc/resolve.conf instead of
+/run/systemd-resolve/resolve.conf
+
+
++ Secondly, I tried to set the value of net.ipv4.fib_multipath_hash_policy sysctl parameter permanently by adjusting file /etc/sysctl.conf as usual. But not in my case, I'm using VyOs router and even I set that parameter through /etc/sysctl.conf, it'll be gone after rebooting.
+
+Eventually, I found the the correct way that I had to use the set command in configure mode of router 
+
+There're the things that I've learned from this journey and they're all funny, useful and amazing to me. It's made me more interested when I found out something I've never been aware.
 
 

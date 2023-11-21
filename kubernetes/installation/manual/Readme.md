@@ -82,7 +82,7 @@ I've also increased the number of pods and re-checked again, and, the capacity o
 
 + First, as you've probably noticed, my cluster has a special node (k8s-additional-worker) which is a almalinux node. I wanted my cluster to have varying distros and it turns out more difficult than I thought. 
 
-+ The rest of my cluster is ubuntu nodes. When they're ready to have applications deployed on them, I decided to add almalinux node to. I was experiencing the almalinux node in NotReady state. Then, I googled and it turned out the problem is the configuration of resolve. The bootstrap phase's going to detect whether the system's using systemd-resolve to configure kubelet. Systemd-resolve is default configured on ubuntu and almalinux is otherwise. 
++ The rest of my cluster is ubuntu nodes. When they were ready to have applications deployed on them, I decided to add almalinux node to. I was experiencing the almalinux node in NotReady state. Then, I googled and it turned out the problem was the configuration of resolve. The bootstrap phase's going to detect whether the system's using systemd-resolve to configure kubelet. Systemd-resolve is default configured on ubuntu and almalinux is otherwise. 
 
 + Finally, I have to hardcode the configuration of kubelet on my alma node to use /etc/resolve.conf instead of
 /run/systemd-resolve/resolve.conf
@@ -92,6 +92,6 @@ I've also increased the number of pods and re-checked again, and, the capacity o
 
 + Eventually, I found the the correct way that I had to use the set command in configure mode of router 
 
-There're things that I've learned from this journey and they're all funny, useful and amazing to me. It's made me more interested when I find out something of which I've never been aware.
+There're things that I've learned from this journey and they're all funny, useful and amazing to me. It made me more interested when I found out something of which I've never been aware.
 
 

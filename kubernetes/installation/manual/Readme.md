@@ -92,6 +92,6 @@ I've also increased the number of pods and re-checked again, and, the capacity o
 
 + Eventually, I found the the correct way that I had to use the set command in configure mode of router 
 
-There're the things that I've learned from this journey and they're all funny, useful and amazing to me. It's made me more interested when I find out something of which I've never been aware.
+There're things that I've learned from this journey and they're all funny, useful and amazing to me. It's made me more interested when I find out something of which I've never been aware.
 
 

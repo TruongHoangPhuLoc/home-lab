@@ -73,7 +73,7 @@ After having several needed things set up, I re-ran the test and surprisingly, i
 
 # Does it actually improve performance?
 
-Now all nodes in my cluster are able to receive traffic balancing-distributed from router. I've already done  observation on what's going to be if I just want only one node to receive traffic by rollingback the hash to L3 or directly connecting to node port on specific node. The result seemed not to be really important. It still be able to handle the same number of requests as being handled by multiple nodes. So that in my opinion, it relates to redundancy more than improving performance because routing doesnt cost too much resources in my context.
+Now all nodes in my cluster are able to receive traffic balancing-distributed from router. I've already done  observation on what's going to be if I just want only one node to receive traffic by rollingback the hash to L3 or directly connecting to node port on specific node. The result seemed not to be really important. It's still able to handle the same number of requests as being handled by multiple nodes. So that in my opinion, it relates to redundancy more than improving performance because routing doesnt cost too much resources in my context.
 
 
 I've also increased the number of pods and re-checked again, and, the capacity of handling number of requests was increased.

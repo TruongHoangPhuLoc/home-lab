@@ -67,7 +67,7 @@ My assumption was the wireless connection is half-duplex and it could degrade re
 ![Alt text](new-flow.png)
 
 
-After having several needed things set up, I re-ran the test and surprisingly, it's now can handle about up to 100k requests / 10 seconds (10k requests / second) 🤣. Now I'm able to believe my assumption is fairly exact
+After having several needed things set up, I re-ran the test and surprisingly, it now can handle about up to 100k requests / 10 seconds (10k requests / second) 🤣. Now I'm able to believe my assumption is fairly exact
 
 ![Alt text](new-result.png)
 
@@ -92,6 +92,6 @@ I've also increased the number of pods and re-checked again, and, the capacity o
 
 + Eventually, I found the the correct way that I had to use the set command in configure mode of router 
 
-There're things that I've learned from this journey and they're all funny, useful and amazing to me. It made me more interested when I found out something of which I've never been aware.
+There're things that I've learned from this journey and they're all funny, useful and amazing to me. It made me more interested when I found out something of which I'd never been aware.
 
 

@@ -1,3 +1,0 @@
-[submodule "kubernetes/installation/manual/--branch"]
-	path = kubernetes/installation/manual/--branch
-	url = https://github.com/nginxinc/kubernetes-ingress.git

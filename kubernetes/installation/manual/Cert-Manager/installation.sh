@@ -6,3 +6,4 @@ helm install \
   --create-namespace \
   --version v1.13.2 \
   --set installCRDs=true
+  

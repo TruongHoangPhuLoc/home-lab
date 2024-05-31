@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <script>
+        // Establish WebSocket connection
+        const socket = new WebSocket('ws://localhost:8000');
+        
+        // Event listener for WebSocket open
+        socket.addEventListener('open', function (event) {
+            console.log('WebSocket connection established');
+        });
+        
+        // Event listener for WebSocket messages
+        socket.addEventListener('message', function (event) {
+            console.log('Message received from server:', event.data);
+        });
+        
+        // Function to send message to server
+        function sendMessage(message) {
+            socket.send(message);
+        }
+        let intervalId = setInterval(function(){
+            message = "2:hello world"
+            console.log(message);
+            sendMessage(message);
+        }, 2000);
+        </script>
+        
+</html>

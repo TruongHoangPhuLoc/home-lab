@@ -1,0 +1,8 @@
+1. Modify homepage, using the downloaded file and using that template 
+    - 1.1 divide 2 containers in the homepage, 1 for sent requests and 1 for received request, if possible
+Done
+
+2. Deploy Jenkins and expose it to internet so that github can connect to
+    - 2. Implement CI/CD
+
+3. Find out a open-source solution for object storage and implement it for storing images such as avatar, uploaded images.

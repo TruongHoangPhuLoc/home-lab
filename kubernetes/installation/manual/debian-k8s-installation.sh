@@ -6,6 +6,8 @@ swapoff -a
 # disable across reboots in /etc/fstab (warning: just workaround solution, its not perfect)
 sed -i 's^\/swap^\#\/swap^g' /etc/fstab
 
+sed -i 's^ubuntu-node^k8s-master-03^g' /etc/hosts
+
 # or we can mask unit file of swap by having it linked to /dev/null
 systemctl mask swap.img.swap 
 
@@ -60,7 +62,7 @@ systemctl enable containerd
 mkdir -p /etc/apt/keyrings && chmod 755 /etc/apt/keyrings 
 
 # download k8s key
-curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring. --yes
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring --yes
 
 # add k8s repo
 echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
@@ -69,3 +71,14 @@ echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.
 apt-get update
 apt-get install -y kubelet kubeadm kubectl
 apt-mark hold kubelet kubeadm kubectl
+
+
+
+kubeadm init --control-plane-endpoint=k8s-api-server.internal.locthp.com --pod-network-cidr=10.244.0.0/16 --upload-certs
+
+
+
+
+
+
+

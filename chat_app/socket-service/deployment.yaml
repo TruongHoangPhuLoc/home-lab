@@ -1,0 +1,69 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: chat-app
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: socket-app
+  namespace: chat-app
+  labels:
+    app: socket-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: socket-app
+  template:
+    metadata:
+      labels:
+        app: socket-app
+    spec:
+      containers:
+      - name: socket-app
+        image: locthp/socket_service:dev
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: socket-app
+  namespace: chat-app
+spec:
+  selector:
+    app: socket-app
+  ports:
+    - protocol: TCP
+      port: 8000
+      targetPort: 8000
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: socket-app
+  namespace: chat-app
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.org/websocket-services: "socket-app"
+    nginx.org/proxy-read-timeout: "300s"
+    nginx.org/proxy-send-timeout: "300s"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - socket.internal.locthp.com
+    secretName: socket-app-certificate
+  rules:
+  - host: socket.internal.locthp.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: socket-app
+            port:
+              number: 8000

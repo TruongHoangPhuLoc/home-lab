@@ -1,0 +1,87 @@
+terraform {
+  required_providers {
+    proxmox = {
+      source = "telmate/proxmox"
+      version = "3.0.1-rc1"
+    }
+  }
+}
+
+provider "proxmox"{
+  # url is the hostname (FQDN if you have one) for the proxmox host you'd like to connect to to issue the commands. my proxmox host is 'prox-1u'. Add /api2/json at the end for the API
+  pm_api_url = "https://172.16.1.252:8006/api2/json"
+  # leave tls_insecure set to true unless you have your proxmox SSL certificate situation fully sorted out (if you do, you will know)
+  pm_tls_insecure = true
+  pm_user="root@pam"
+  pm_password="Phuloc@99."
+  pm_debug = true
+}
+locals {
+  vm_name          = "VM-test"
+  pve_node         = "dell-03"
+  iso_storage_pool = "local"
+}
+
+resource "proxmox_cloud_init_disk" "ci" {
+  name      = local.vm_name
+  pve_node  = local.pve_node
+  storage   = local.iso_storage_pool
+
+  meta_data = yamlencode({
+    instance_id    = sha1(local.vm_name)
+    local-hostname = local.vm_name
+  })
+
+user_data = <<EOT
+#cloud-config
+users:
+  - name: locthp
+    ssh-authorized-keys:
+      - "${var.ssh_key}"
+EOT
+
+  network_config = yamlencode({
+    version = 1
+    config = [{
+      type = "physical"
+      name = "ens18"
+      subnets = [{
+        type            = "static"
+        address         = "172.16.1.99/24"
+        gateway         = "172.16.1.1"
+        dns_nameservers = ["172.16.1.5", "172.16.1.6"]
+      }]
+    }]
+  })
+}
+resource "proxmox_vm_qemu" "test-clone" {
+  name        = "VM-test"
+  desc        = "Clone demo"
+  target_node = "dell-03"
+  
+  ### or for a Clone VM operation
+  os_type	 = "cloud-init"
+  clone = "template"
+  cpu = "x86-64-v2-AES"
+  cores = 1
+  sockets = 1
+  memory = 2048
+  scsihw = "virtio-scsi-pci"
+  agent = 1
+  disks {
+    scsi {
+      scsi0 {
+        disk {
+          iothread = true
+          size     = 20
+          storage  = "local-lvm"
+        }
+      }
+      scsi1 {
+        cdrom {
+            iso = "local:iso/tf-ci-VM-test.iso"
+        }
+      }
+    }
+  }
+}

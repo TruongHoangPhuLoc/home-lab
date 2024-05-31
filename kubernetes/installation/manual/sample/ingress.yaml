@@ -2,7 +2,13 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: testing
+  namespace: myapp
 spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - testing.locthp.com
+    secretName: testflask-certificate
   rules:
   - host: testing.locthp.com
     http:

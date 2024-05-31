@@ -1,12 +1,12 @@
 apiVersion: metallb.io/v1beta2
 kind: BGPPeer
 metadata:
-  name: sample
+  name: peer-to-opnsense-router
   namespace: metallb-system
 spec:
   myASN: 64500
   peerASN: 64501
-  peerAddress: 172.16.1.210
+  peerAddress: 172.16.1.1
 
 ---
 apiVersion: metallb.io/v1beta1
@@ -16,7 +16,7 @@ metadata:
   namespace: metallb-system
 spec:
   addresses:
-  - 172.16.1.220-172.16.1.225
+  - 172.16.2.1-172.16.2.254
 
 ---
 apiVersion: metallb.io/v1beta1

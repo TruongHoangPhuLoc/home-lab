@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: testing-1
+  namespace: myapp
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - testing1.locthp.com
+    secretName: testflask-certificate
+  rules:
+  - host: testing1.locthp.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: test-flask
+            port:
+              number: 80

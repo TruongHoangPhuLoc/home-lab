@@ -1,3 +1,6 @@
 [submodule "kubernetes/installation/manual/Nginx-ingress-controller/kubernetes-ingress"]
 	path = kubernetes/installation/manual/Nginx-ingress-controller/kubernetes-ingress
 	url = https://github.com/nginxinc/kubernetes-ingress.git
+[submodule "ansible"]
+	path = ansible
+	url = https://github.com/TruongHoangPhuLoc/ansible.git

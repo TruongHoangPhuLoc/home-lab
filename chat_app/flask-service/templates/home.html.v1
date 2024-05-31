@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homepage</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2, h3 {
+            text-align: center;
+            color: #333333;
+        }
+        .friend-list {
+            list-style-type: none;
+            padding: 0;
+        }
+        .friend-item {
+            background-color: #ffffff;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .friend-item:hover {
+            background-color: #f0f0f0;
+        }
+        .chat-button {
+            background-color: #007bff;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: block;
+            margin: 20px auto;
+        }
+        .chat-button:hover {
+            background-color: #0056b3;
+        }
+        #friend-section {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .column {
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .friend-list, .request-list {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .friend-item, .request-item {
+            background-color: #ffffff;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .friend-item:hover, .request-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        .add-friend-form {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Container -->
+    <div class="container">
+        <!-- Row 1: Welcome Message -->
+        <div class="row">
+            <div id="welcome-message" user_id="{{ userid }}">
+                <h1>Welcome to Your Homepage {{ username }}</h1>
+            </div>
+        </div>
+
+        <!-- Row 2: Friend Section -->
+        <div class="row" id = "friend-section">
+            <!-- Column 1: Friend List -->
+            <div class="column">
+                <h2>Friend List</h2>
+                <ul class="friend-list">
+                    {% for friend in friend_list %}
+                    <li class="friend-item">{{ friend }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Column 2: Received Requests -->
+            <div class="column">
+                <h2>Received Requests</h2>
+                <ul class="request-list">
+                    {% for request in received_requests %}
+                    <li class="request-item"><span class="request-item-span">{{ request[0] }}</span> <button class="accept-request-btn" sender_id="{{ request[1] }}" receiver_id ="{{ request[2] }}">Accept</button></li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Column 3: Sent Requests -->
+            <div class="column">
+                <h2>Sent Requests</h2>
+                <ul class="request-list">
+                    {% for request in sent_requests %}
+                    <li class="request-item"><span class="request-item-span">{{ request[0] }}</span> <button class="cancel-request-btn" sender_id="{{ request[1] }}" receiver_id ="{{ request[2] }}" >Cancel</button></li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Row 3: Friend Adding Section -->
+        <div class="row">
+            <div class="add-friend-form">
+                <form id="addFriendForm">
+                    <label for="friendUsername">Friend's Username:</label>
+                    <input type="text" id="friendUsername" name="friendUsername" required>
+                    <button type="submit">Send Request</button>
+                </form>
+                <div id="message"></div>
+            </div>
+        </div>
+    </div>
+        <!-- Row 4: Logout Section -->
+    <div class="row">
+            <div class="logout-section">
+                <form action="/logout" method="post">
+                    <button type="submit">Logout</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add necessary scripts -->
+    <script>
+            // Establish WebSocket connection
+            const socket = new WebSocket('ws://localhost:8000');
+            // Event listener for WebSocket open
+            socket.addEventListener('open', function (event) {
+                const user_id = document.getElementById('welcome-message').getAttribute('user_id');
+                message = {"type": "Initialization", "data": user_id}
+                socket.send(JSON.stringify(message))
+            });
+            socket.addEventListener('message', function (event) {
+                const result = JSON.parse(event.data)
+                console.log(result.type)
+                if (result.type === 'Reload') {
+                    window.location.reload();
+                }
+            });
+            document.addEventListener('DOMContentLoaded', function() {
+            const addFriendForm = document.getElementById('addFriendForm');
+            const messageDiv = document.getElementById('message');   
+            addFriendForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const friendUsername = document.getElementById('friendUsername').value;
+
+                fetch('/send_request', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ receiver_username: friendUsername }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    messageDiv.textContent = data.message || data.error || 'Something went wrong';
+                })
+                .catch(error => {
+                    console.error('Error sending friend request:', error);
+                    messageDiv.textContent = 'Something went wrong';
+                });
+            });
+        });
+        document.addEventListener('DOMContentLoaded', function() {
+            // Event listener for friend list items
+            document.querySelectorAll('.friend-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    // Get friend ID from data attribute
+                    const friendId = item.getAttribute('data-friend-id');
+                    // Example: Redirect to chat page with friend ID
+                    window.location.href = `/chat/${friendId}`;
+                });
+            });
+        });
+
+    // Handling accepting request
+    document.addEventListener('DOMContentLoaded', function() {
+    // Event listener for accept request button
+    document.querySelectorAll('.accept-request-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const sender_id = button.getAttribute('sender_id');
+            const receiver_id = button.getAttribute('receiver_id');
+            // Send AJAX request to handle acceptance
+            fetch('/accept_request', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ sender_id: sender_id, receiver_id: receiver_id }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Handle response from server
+                console.log(data); // You can update the UI based on the response if needed
+                message = {type: "Accepted", sender_id: sender_id, receiver_id: receiver_id}
+                socket.send(JSON.stringify(message))
+                window.location.reload();
+            })
+            .catch(error => {
+                console.error('Error accepting request:', error);
+                // Handle error
+            });
+
+        });
+    });
+
+    // Event listener for cancel request button
+    document.querySelectorAll('.cancel-request-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const requestId = button.getAttribute('data-request-id');
+
+            // Send AJAX request to handle cancellation
+            fetch('/cancel_request', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ request_id: requestId }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Handle response from server
+                console.log(data); // You can update the UI based on the response if needed
+            })
+            .catch(error => {
+                console.error('Error canceling request:', error);
+                // Handle error
+            });
+        });
+    });
+});
+    </script>
+</body>
+</html>

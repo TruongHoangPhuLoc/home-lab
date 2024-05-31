@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+
+
+<title>Home Page</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="https://netdna.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="{{url_for('static', filename='homepage/css/style.css')}}">
+</head>
+<body>
+<div class="container">
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+
+  
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item active">
+          <a class="nav-link" href="/home">Home <span class="sr-only">(current)</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/requests">Friend Requests</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Dropdown
+          </a>
+          <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+            <a class="dropdown-item" href="#">Action</a>
+            <a class="dropdown-item" href="#">Another action</a>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="#">Something else here</a>
+          </div>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link disabled" href="#">Disabled</a>
+        </li>
+      </ul>
+      <form class="form-inline my-2 my-lg-0" id="addFriendForm">
+        <input class="form-control mr-sm-2" type="search" placeholder="Enter Friend's Name" aria-label="Add Friend" id="friendUsername" name="friendUsername" required>
+        <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Add Friend</button>
+        <div id="message"></div>
+      </form>
+    </div>
+  </nav>
+<div class="row">
+<div class="col-md-8">
+  <div class="people-nearby" class="friend-list">
+    {% for friend in friend_list %}
+    <div class="nearby-user">
+    <div class="row">
+    <div class="col-md-2 col-sm-2">
+    <img src="https://bootdey.com/img/Content/avatar/avatar7.png" alt="user" class="profile-photo-lg">
+    </div>
+    <div class="col-md-7 col-sm-7">
+    <h5><a href="#" class="profile-link">{{ friend }}</a></h5>
+    <p>Software Engineer</p>
+    <p class="text-muted">500m away</p>
+    </div>
+    <div class="col-md-3 col-sm-3">
+    <button class="btn btn-primary pull-right">Chat</button>
+    </div>
+    </div>
+    </div>
+    {% endfor %}
+</div>
+</div>
+</div>
+</div>
+<script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+<script src="https://netdna.bootstrapcdn.com/bootstrap/4.0.0-beta/js/bootstrap.min.js"></script>
+<script type="text/javascript">
+  const ws_host = '{{ ws_host }}';
+  const userid_template = '{{ userid }}';
+  const socket = new WebSocket(`wss://${ws_host}:443`);
+  // Establish WebSocket connection
+socket.addEventListener('open', function (event) {
+    const user_id = userid_template;
+    message = {"type": "Initialization", "data": user_id}
+    socket.send(JSON.stringify(message))
+});
+socket.addEventListener('message', function (event) {
+    const result = JSON.parse(event.data)
+    console.log(result)
+    console.log(result.type)
+    if (result.type === 'Reload') {
+        window.location.reload();
+    }
+});
+socket.addEventListener('close', function (event){
+  console.log("The connection has been closed successfully.");
+})
+
+
+
+</script>
+<script src="{{url_for('static', filename='homepage/js/main.js')}}"></script>
+</body>
+</html>

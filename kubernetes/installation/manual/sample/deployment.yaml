@@ -1,7 +1,13 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: myapp
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: locthp-testflask
+  namespace: myapp
   labels:
     app: testflask
 spec:
@@ -25,6 +31,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: test-flask
+  namespace: myapp
 spec:
   selector:
     app: testflask

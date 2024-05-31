@@ -1,0 +1,60 @@
+[tool.black]
+line-length = 120
+target-version = ['py310']
+extend-exclude = '.*pb2.*'
+
+[tool.isort]
+atomic = true
+profile = "black"
+line_length = 120
+skip_gitignore = true
+balanced_wrapping = true
+filter_files = true
+skip_glob = ['*pb2*']
+
+[tool.pytest.ini_options]
+pythonpath = [
+    ".",
+    "tests/suite",
+    "tests/suite/grpc",
+    "tests/suite/fixtures",
+    "tests/suite/utils",
+]
+addopts = "--tb=native -ra --disable-warnings -x -l --profile -v"
+log_cli = true
+markers =[
+    "appprotect",
+    "appprotect_integration",
+    "appprotect_waf_policies",
+    "appprotect_waf_policies_allow",
+    "appprotect_waf_policies_block",
+    "appprotect_waf_policies_grpc",
+    "appprotect_watch",
+    "appprotect_batch",
+    "dos",
+    "dos_learning",
+    "ingresses",
+    "policies",
+    "policies_rl",
+    "policies_jwt",
+    "policies_ac",
+    "policies_mtls",
+    "rewrite",
+    "skip_for_nginx_oss",
+    "smoke",
+    "ts",
+    "vs",
+    "vs_ipv6",
+    "vs_rewrite",
+    "vs_responses",
+    "vs_grpc",
+    "vs_redirects",
+    "vs_externaldns",
+    "vs_externalname",
+    "vs_certmanager",
+    "vsr",
+]
+testpaths = [
+    "tests",
+    "perf-tests",
+]

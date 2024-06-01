@@ -11,7 +11,7 @@ spec:
     # Name of a secret used to store the ACME account private key
     privateKeySecretRef:
       name: letsencrypt-prod
-    # Enable the HTTP-01 challenge provider
+    # Enable the DNS-01 challenge provider
     solvers:
     - dns01:
         cloudflare:

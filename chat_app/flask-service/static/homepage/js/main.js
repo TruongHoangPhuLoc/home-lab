@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log(data); // You can update the UI based on the response if needed
                 message = {type: "Accepted", sender_id: sender_id, receiver_id: receiver_id}
                 socket.send(JSON.stringify(message))
-                window.location.reload();
+                document.location.href="/";
             })
             .catch(error => {
                 console.error('Error accepting request:', error);

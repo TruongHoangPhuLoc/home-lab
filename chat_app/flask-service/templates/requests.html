@@ -84,7 +84,7 @@ socket.addEventListener('message', function (event) {
     const result = JSON.parse(event.data)
     console.log(result.type)
     if (result.type === 'Reload') {
-        document.location.href="/";
+        document.location.href="/home";
     }
 });
 

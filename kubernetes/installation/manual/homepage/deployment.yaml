@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: homepage
-  namespace: default
+  namespace: homepage
   labels:
     app.kubernetes.io/name: homepage
 secrets:
@@ -13,7 +13,7 @@ kind: Secret
 type: kubernetes.io/service-account-token
 metadata:
   name: homepage
-  namespace: default
+  namespace: homepage
   labels:
     app.kubernetes.io/name: homepage
   annotations:
@@ -23,17 +23,24 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: homepage
-  namespace: default
+  namespace: homepage
   labels:
     app.kubernetes.io/name: homepage
 data:
   kubernetes.yaml: |
-    mode: default
+    mode: cluster
   settings.yaml: |
     title: LocTruong's Homepage
     layout:
-       kubernetes:
-         style: row
+      Networking Group:
+        style: row
+        columns: 3
+      Infrastructure:
+        style: row
+        columns: 3
+    providers:
+      longhorn:
+       url: https://longhorn.internal.locthp.com
 
   #settings.yaml: |
   #  providers:
@@ -56,23 +63,44 @@ data:
             widget:
                type: opnsense
                url: http://172.16.1.1
-               username: "inGDvpfxZJCuS4yow6Fxdd8EHWPRNMpqXNcacAGj7j7qNL1JEOs0D1AoIUtCziFG0g1gE26/ghGcylTD"
-               password: "XPSWiLrkGvuS/eoh2gcHdiN6mmCHh/2BGOglPOPQ3Uk3zmW21PChnPz2tr0LAa4HihkPW7lDisxDWJxm"
+               username: "ZZ6Z+MKerzSQbSMyBY8dS4wjdupIDhX1AQSyz1gccKSpiCtYsSM/4VixGklgJbuJy+zdUHOzJeiOV3FT"
+               password: "MLbHiodPuW4iFvF50OjEEaWTJcutD5XAIp3PrSe+/AYgQuRJRPrUlChe/Rhsapnj1cA3iUlfDHLBa45l"
+        - Pihole Master:
+            icon: pi-hole.png
+            href: http://172.16.1.5/admin
+            description: Pihole Resolver
+            ping: 172.16.1.5
+            widget:
+               type: pihole
+               url: http://172.16.1.5/admin/api.php?summaryRaw&auth=
+               key: "1a8c0be3938728373100d2a3ae8d3c57ebf37f4087fd4bc51c75ab7c2ed3fdad"
+
+        - Pihole Slave:
+            icon: pi-hole.png
+            href: http://172.16.1.6/admin
+            description: Pihole Resolver
+            ping: 172.16.1.6
+            widget:
+               type: pihole
+               url: http://172.16.1.6/admin/api.php?summaryRaw&auth=
+               key: "1a8c0be3938728373100d2a3ae8d3c57ebf37f4087fd4bc51c75ab7c2ed3fdad"
 
     - Infrastructure:
         - Proxmox-intelnuc-01:
             href: https://172.16.1.250:8006/
-            description: Homepage is the best
-            siteMonitor: http://172.16.1.250/
+            description: This node's being temporarily not used
+            icon: proxmox.png
+            ping: 172.16.1.250
         - Proxmox-hp-02:
             href: https://172.16.1.251:8006/
-            description: Homepage is the best
-            siteMonitor: http://172.16.1.251/
+            description: PVE virtualization platform
+            icon: proxmox.png
+            ping: 172.16.1.251
             widget:
               type: proxmox
-              url: https://proxmox.host.or.ip:8006
-              username: api_token_id
-              password: api_token_secret
+              url: https://172.16.1.251:8006
+              username: "api@pam!homepage"
+              password: "5c85c1d4-6169-49e3-a5f8-499df7c8ccab"
         - Proxmox-dell-03:
             href: https://172.16.1.252:8006/
             icon: proxmox.png
@@ -101,6 +129,15 @@ data:
           cpu: true
           memory: true
           showLabel: true
+    # - longhorn:
+    #     # Show the expanded view
+    #     expanded: true
+    #     # Shows a node representing the aggregate values
+    #     total: true
+    #     # Shows the node names as labels
+    #     labels: true
+    #     # Show the nodes
+    #     nodes: true
 
     - search:
         provider: google
@@ -135,13 +172,13 @@ rules:
     verbs:
       - get
       - list
-  - apiGroups:
-      - traefik.containo.us
-    resources:
-      - ingressroutes
-    verbs:
-      - get
-      - list
+  # - apiGroups:
+  #     - traefik.containo.us
+  #   resources:
+  #     - ingressroutes
+  #   verbs:
+  #     - get
+  #     - list
   - apiGroups:
       - metrics.k8s.io
     resources:
@@ -164,13 +201,13 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: homepage
-    namespace: default
+    namespace: homepage
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: homepage
-  namespace: default
+  namespace: homepage
   labels:
     app.kubernetes.io/name: homepage
   annotations:
@@ -188,7 +225,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: homepage
-  namespace: default
+  namespace: homepage
   labels:
     app.kubernetes.io/name: homepage
 spec:
@@ -254,14 +291,25 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: homepage
-  namespace: default
+  namespace: homepage
   labels:
     app.kubernetes.io/name: homepage
-  #annotations:
+  annotations:
+    gethomepage.dev/description: Dynamically Detected Homepage
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/group: Cluster Management
+    gethomepage.dev/icon: homepage.png
+    gethomepage.dev/name: Homepage
+    nginx.org/redirect-to-https: 'True'
+    cert-manager.io/cluster-issuer: letsencrypt-prod
 spec:
   ingressClassName: nginx
+  tls:
+  - hosts:
+    - homepage.internal.locthp.com
+    secretName: homepage-certificate
   rules:
-    - host: "homepage.locthp.com"
+    - host: "homepage.internal.locthp.com"
       http:
         paths:
           - path: "/"

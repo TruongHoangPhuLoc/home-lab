@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Test'){
             steps{
-                sh 'echo "HELLO"'
+                sh 'echo "Repository received a push event"'
             }
         }
     }

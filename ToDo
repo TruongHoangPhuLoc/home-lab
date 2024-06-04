@@ -5,5 +5,6 @@
 2. Check k8s self-signed cert
 3. Add logout section to application
 4. Integrate new features to homepage, as much as possible
-5. Read document if having time enough (learning how k8s authenticate user)
+5. Read document if having time enough (learning how k8s authenticates user)
 https://iximiuz.com/en/posts/kubernetes-api-call-simple-http-client/
+6. Review exposed secrets in repository (urgent)

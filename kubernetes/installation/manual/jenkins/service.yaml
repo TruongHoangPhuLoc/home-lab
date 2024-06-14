@@ -29,8 +29,8 @@ metadata:
     nginx.org/proxy-send-timeout: "90"
     nginx.org/proxy-buffering: "False"
     nginx.org/client-max-body-size: "10m"
-    nginx.org/location-snippets: |
-      proxy_redirect https://jenkins.internal.locthp.com/manage/ https://jenkins.locthp.com/manage/;
+    #nginx.org/location-snippets: |
+    #  proxy_redirect https://jenkins.internal.locthp.com/manage/ https://jenkins.locthp.com/manage/;
     # nginx.org/server-snippets: |
     #   location ~ "^/static/[0-9a-fA-F]{8}\/(.*)$" {
     #     # rewrite all static files into requests to the root

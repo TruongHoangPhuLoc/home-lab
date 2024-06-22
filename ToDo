@@ -1,6 +1,7 @@
 1. Make jenkins public for connection from github X
     1.1 Need to find out why using cloudflared to connect to reverse proxy (nginx-ingress) isnt working. Using LB service currently instead
     Behavior: Always redirect to internal hostname, need to check Proxy Forward headers for more information
+    DONE
 
 2. Check k8s self-signed cert
 3. Add logout section to application
@@ -8,3 +9,4 @@
 5. Read document if having time enough (learning how k8s authenticates user)
 https://iximiuz.com/en/posts/kubernetes-api-call-simple-http-client/
 6. Review exposed secrets in repository (urgent)
+7. Try to deploy new vm (kernel 5 as default) and upgrade to kernel 6.5 then

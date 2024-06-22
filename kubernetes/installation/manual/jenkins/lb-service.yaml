@@ -12,5 +12,9 @@ spec:
     app: jenkins-server
   type: LoadBalancer
   ports:
-    - port: 80
+    - name: httpport
+      port: 80
       targetPort: 8080
+    - name: jnlpport
+      port: 50000
+      targetPort: 50000

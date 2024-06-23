@@ -4,7 +4,7 @@ pipeline {
         stage('Test'){
             steps{
                     withKubeConfig([credentialsId: 'prod-cluster-configfile']) {
-                        sh 'kubectl apply -f my-kubernetes-directory'
+                        sh 'kubectl apply get nodes'
                 }
             }
         }

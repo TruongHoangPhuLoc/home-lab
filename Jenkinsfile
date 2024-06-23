@@ -3,7 +3,9 @@ pipeline {
     stages {
         stage('Test'){
             steps{
-                sh 'echo "Repository received a push event"'
+                    withKubeConfig([credentialsId: 'prod-cluster-configfile']) {
+                        sh 'kubectl apply -f my-kubernetes-directory'
+                }
             }
         }
     }

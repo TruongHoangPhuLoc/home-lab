@@ -4,8 +4,7 @@ pipeline {
         stage('Test'){
             steps{
                 sh 'echo "Repository received a push event"'
-                sh 'ls'
             }
         }
     }
-}s
+}

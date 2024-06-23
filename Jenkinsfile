@@ -2,11 +2,11 @@ pipeline {
     agent any
     stages {
         stage('Test'){
-                    // withKubeConfig([credentialsId: 'prod-cluster-configfile']) 
-                    // {
-                    //     sh 'kubectl get nodes'
-                    // }
-                    sh  'echo Hello'
+            steps{
+                    withKubeConfig([credentialsId: 'prod-cluster-configfile']) {
+                        sh 'cat kubeconfig'
+                }
+            }
         }
     }
 }

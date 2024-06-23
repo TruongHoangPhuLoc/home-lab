@@ -5,7 +5,8 @@ pipeline {
             steps{
                     withKubeConfig([credentialsId: 'prod-cluster-configfile']) {
                         sh 'kubectl cluster-info'
-                        sh 'ls -lah'
+                        sh 'echo $KUBECONFIG'
+                        sh 'cat $KUBECONFIG'
                 }
             }
         }

@@ -3,7 +3,7 @@ pipeline {
     stages {
         stage('Test'){
             steps{
-                    withKubeConfig([credentialsId: 'prod-cluster-configfile']) {
+                    withKubeConfig([credentialsId: 'prod-cluster-configfile-1']) {
                         sh 'kubectl get nodes'
                 }
             }

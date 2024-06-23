@@ -4,7 +4,8 @@ pipeline {
         stage('Test'){
             steps{
                     withKubeConfig([credentialsId: 'prod-cluster-configfile']) {
-                        sh 'cat kubeconfig'
+                        sh 'kubectl cluster-info'
+                        sh 'ls -lah'
                 }
             }
         }

@@ -2,10 +2,10 @@ pipeline {
     agent any
     stages {
         stage('Test'){
-            // withKubeConfig([credentialsId: 'prod-cluster-configfile']) {
-            //     sh 'kubectl get nodes'
-            // }
-            sh 'ls'
+            steps{
+                sh 'echo "Repository received a push event"'
+                sh 'ls'
+            }
         }
     }
 }s

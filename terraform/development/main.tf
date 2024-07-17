@@ -12,8 +12,10 @@ provider "proxmox"{
   pm_api_url = "https://172.16.1.253:8006/api2/json"
   # leave tls_insecure set to true unless you have your proxmox SSL certificate situation fully sorted out (if you do, you will know)
   pm_tls_insecure = true
-  pm_user="root@pam"
-  pm_password="Phuloc@99."
+  # Change
+  # pm_user="user"
+  # Change
+  # pm_password="Mypassword"
   pm_debug = true
 }
 locals {

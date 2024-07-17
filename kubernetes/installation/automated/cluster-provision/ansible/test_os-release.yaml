@@ -1,0 +1,8 @@
+- hosts: all
+  user: locthp
+  become: true
+  gather_facts: yes
+  tasks:
+    - name: Display OS_RElease
+      debug:
+        msg: "{{ ansible_distribution_release }}"

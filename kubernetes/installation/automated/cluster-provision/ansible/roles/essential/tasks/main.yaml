@@ -1,0 +1,125 @@
+- name: Update the Ubuntu servers to be latest
+  apt:
+    update_cache: true
+    force_apt_get: true
+    upgrade: "yes"
+  when: ansible_distribution == "Ubuntu"
+  async: 7200
+  poll: 5
+  notify:
+    - Prepare content of message
+    - Set dashes
+    - Add dashes
+    - Send Discord message
+# Disable Swap
+- name: Mask Swap Unit 
+  ansible.builtin.systemd_service:
+    name: swap.img.swap
+    masked: true
+- name: Running Swapoff
+  shell:
+    cmd: "swapoff -a"
+# Install required packages to use Kubernetes apt repo
+- name: Install required packages to use k8s apt repos
+  ansible.builtin.apt:
+    force_apt_get: true
+    name:
+    - apt-transport-https
+    - ca-certificates
+    - curl
+    - gpg
+    state: latest
+
+# Add necessary repositories
+- name: Add Kubernetes and Containerd Repository
+  block:
+  - name: Check whether Containerd Key already existed or not
+    ansible.builtin.stat:
+        path: /etc/apt/trusted.gpg.d/docker.gpg
+    register: containerd_key_existence 
+  - name: Download Containerd Key
+    shell:
+      cmd: "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmour -o /etc/apt/trusted.gpg.d/docker.gpg --yes"
+    when: not containerd_key_existence.stat.exists
+  - name: Add Containerd Repo
+    ansible.builtin.apt_repository:
+      repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+      state: present
+  - name: Check if k8s key already existed
+    ansible.builtin.stat:
+        path: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    register: k8s_key_existence 
+  - name: Download Kubernetes Key
+    shell:
+      cmd: "mkdir -p /etc/apt/keyrings && chmod 755 /etc/apt/keyrings && curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg"
+    when: not k8s_key_existence.stat.exists    
+  - name: Add Kubenetes Key
+    ansible.builtin.apt_repository:
+      repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /"
+      filename: kubernetes.list
+      state: present
+# Install Containerd and Kubernetes packages
+- name: Install Containerd and Kubernetes packages
+  ansible.builtin.apt:
+    force_apt_get: true
+    name:
+    - containerd.io
+    - kubelet 
+    - kubeadm
+    - kubectl
+    state: latest
+# Tune System and Do Post Installation
+- name: Tune System and Do Post Installation
+  block:
+  - name: Tune System
+    block:
+    - name: Add needed modules
+      ansible.builtin.blockinfile:
+        append_newline: true
+        create: true
+        path: /etc/modules-load.d/k8s.conf
+        block: |
+            overlay
+            br_netfilter
+    - name: Activate added modules
+      shell:
+        cmd: "modprobe overlay && modprobe br_netfilter"
+    # sysctl params required by setup, params persist across reboots
+    - name: Tweak sysctl params
+      ansible.builtin.blockinfile:
+        append_newline: true
+        create: true
+        path: /etc/sysctl.d/k8s.conf
+        block: |
+            net.bridge.bridge-nf-call-iptables  = 1
+            net.bridge.bridge-nf-call-ip6tables = 1
+            net.ipv4.ip_forward                 = 1
+    - name: Apply newly added sysctl params
+      shell:
+        cmd: "sysctl --system"
+  - name: Post Installation
+    block:
+    - name: Containerd configuration processing
+      block:
+      - name: Generate Containerd default configuration file
+        shell:
+          cmd: "containerd config default | tee /etc/containerd/config.toml >/dev/null 2>&1"
+      - name: Modify Cgroup driver to systemd
+        ansible.builtin.replace:
+          path: /etc/containerd/config.toml
+          regexp: "SystemdCgroup \\= false"
+          replace: "SystemdCgroup = true"
+      - name: Restart Containerd to take effect previous step
+        ansible.builtin.systemd_service:
+          name: containerd
+          state: restarted
+          enabled: true
+    - name: Hold packages to prevent from being upgraded
+      ansible.builtin.dpkg_selections:
+        name: "{{ item }}"
+        selection: hold
+      loop:
+        - kubelet
+        - kubeadm
+        - kubectl
+

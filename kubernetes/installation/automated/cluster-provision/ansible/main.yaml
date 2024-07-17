@@ -1,0 +1,13 @@
+- hosts: all
+  user: locthp
+  become: true
+  roles:
+   - essential
+  
+
+- hosts: k8s-masters
+  user: locthp
+  become: true 
+  roles:
+     - { role: first-master-initialization, when: "groups['k8s-masters'][0] == inventory_hostname"}
+     - other-master-nodes-joining

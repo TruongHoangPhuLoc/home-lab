@@ -1,0 +1,14 @@
+[all]
+172.16.1.110
+172.16.1.111
+172.16.1.112
+[all:vars]
+ansible_ssh_common_args='-o StrictHostKeyChecking=accept-new'
+control-plane-endpoint='172.16.1.230'
+
+
+[k8s-masters]
+172.16.1.113
+172.16.1.114
+172.16.1.115
+

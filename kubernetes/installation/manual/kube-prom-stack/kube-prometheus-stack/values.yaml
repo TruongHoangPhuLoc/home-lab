@@ -935,7 +935,7 @@ grafana:
   ##
   defaultDashboardsTimezone: utc
 
-  adminPassword: "Phuloc@99."
+  adminPassword: "password"
 
   rbac:
     ## If true, Grafana PSPs will be created

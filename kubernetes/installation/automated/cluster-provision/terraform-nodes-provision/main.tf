@@ -38,6 +38,7 @@ proxmox_params = {
 target_node = "geekom-dev"
 instance_configruations = {
   k8s-master-01 = {
+    vmid = "200"
     cpu = {
       cores = 2
     }
@@ -49,6 +50,7 @@ instance_configruations = {
     }
   }
   k8s-master-02 = {
+    vmid = "201"
     cpu = {
         cores = 2
     }
@@ -60,6 +62,7 @@ instance_configruations = {
     }
   }
   k8s-master-03 = {
+    vmid = "202"
     cpu = {
         cores = 2
     }
@@ -85,6 +88,7 @@ proxmox_params = {
 target_node = "geekom-dev"
 instance_configruations = {
   k8s-worker-01 = {
+    vmid = "203"
     cpu = {
       cores = 2
     }
@@ -96,6 +100,7 @@ instance_configruations = {
     }
   }
   k8s-worker-02 = {
+    vmid = "204"
     cpu = {
         cores = 2
     }
@@ -111,6 +116,7 @@ instance_configruations = {
 # https://stackoverflow.com/questions/62403030/terraform-wait-till-the-instance-is-reachable
 resource "null_resource" "waiting_instances_ready" {
   # waiting for newly created instances to be ready to run ansible
+  depends_on = [ module.k8s-master-nodes-provision, module.k8s-worker-nodes-provision ]
   for_each = toset(concat(module.k8s-master-nodes-provision.instances_ip,module.k8s-worker-nodes-provision.instances_ip))
   provisioner "remote-exec" {
     connection {
@@ -135,12 +141,12 @@ resource "ansible_host" "worker-nodes" {
   groups = ["k8s-workers"]
 }
 
-resource "null_resource" "running-ansible" {
-  depends_on = [ null_resource.waiting_instances_ready ]
-    provisioner "local-exec" {
-    command = "ansible-playbook -i inventory.yaml ../ansible/main.yaml"
-  }
-}
+# resource "null_resource" "running-ansible" {
+#   depends_on = [ null_resource.waiting_instances_ready ]
+#     provisioner "local-exec" {
+#     command = "ansible-playbook -i inventory.yaml ../ansible/main.yaml"
+#   }
+# }
 resource "ansible_group" "group" {
   name     = "all"
   variables = {

@@ -1,0 +1,3 @@
+- name: Run kubeadm join
+  shell:
+    cmd: "{{ hostvars[groups['k8s-masters'][0]]['kubeadm_join'] }}"

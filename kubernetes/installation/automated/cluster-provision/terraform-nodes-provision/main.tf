@@ -6,15 +6,33 @@ terraform {
     }
   }
 }
+variable "pm_api_url" {
+  
+}
 
+variable "pm_user" {
+  
+}
+
+variable "pm_password" {
+  
+}
+
+variable "pm_debug" {
+  
+}
+
+variable "pm_tls_insecure" {
+  
+}
 module "k8s-master-nodes-provision" {
 source = "../../../../../terraform/proxmox-provider/provision-vm"
 proxmox_params = {
-  "pm_api_url": "https://172.16.1.253:8006/api2/json", 
-# Use TF_VAR instead 
-#  "pm_user": "User", "pm_password": "Pass", 
-  "pm_debug": true, 
-  "pm_tls_insecure": true 
+  pm_api_url = var.pm_api_url
+  pm_user = var.pm_user
+  pm_password = var.pm_password
+  pm_debug = var.pm_debug
+  pm_tls_insecure = var.pm_tls_insecure
 }
 target_node = "geekom-dev"
 instance_configruations = {
@@ -57,11 +75,11 @@ instance_configruations = {
 module "k8s-worker-nodes-provision" {
 source = "../../../../../terraform/proxmox-provider/provision-vm"
 proxmox_params = {
-  "pm_api_url": "https://172.16.1.253:8006/api2/json", 
-# Use TF_VAR instead 
-#  "pm_user": "User", "pm_password": "Pass", 
-  "pm_debug": true, 
-  "pm_tls_insecure": true 
+  pm_api_url = var.pm_api_url
+  pm_user = var.pm_user
+  pm_password = var.pm_password
+  pm_debug = var.pm_debug
+  pm_tls_insecure = var.pm_tls_insecure
 }
 target_node = "geekom-dev"
 instance_configruations = {

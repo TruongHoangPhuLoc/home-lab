@@ -1,19 +1,37 @@
 - hosts: all
-  user: locthp
+  remote_user: locthp
   become: true
   roles:
-   - essential
-  
+   - { role: essential, when: "inventory_hostname in groups['k8s-masters'] or inventory_hostname in groups['k8s-workers']" }
+   - { role: first-master-initialization, when: "groups['k8s-masters'][0] == inventory_hostname"}
+   - { role: master-nodes-joining, when: "groups['k8s-masters'][0] != inventory_hostname and inventory_hostname not in groups['k8s-workers']"}
+   - { role: worker-nodes-joining, when: "inventory_hostname in groups['k8s-workers']" }
 
-- hosts: k8s-masters
-  user: locthp
-  become: true 
-  roles:
-     - { role: first-master-initialization, when: "groups['k8s-masters'][0] == inventory_hostname"}
-     - master-nodes-joining
+# - hosts: k8s-masters
+#   user: locthp
+#   become: true 
+#   roles:
+#      - { role: first-master-initialization, when: "groups['k8s-masters'][0] == inventory_hostname"}
+#      - { role: master-nodes-joining, when: "groups['k8s-masters'][0] != inventory_hostname"}
 
-- hosts: k8s-workers
-  user: locthp
-  become: true 
-  roles:
-    - worker-nodes-joining
+# - hosts: k8s-workers:k8s-masters
+#   user: locthp
+#   become: true 
+#   roles:
+#     - { role: worker-nodes-joining, when: "inventory_hostname in groups['k8s-workers']" }
+
+- hosts: 127.0.0.1
+  connection: local
+  tasks:
+  - name: Store Kubeconfig on admin's machine
+    fetch:
+      src: /etc/kubernetes/admin.conf
+      dest: ~/.kube/new-cluster.conf
+      flat: true
+    delegate_to: "{{ groups['k8s-masters'][0] }}"
+    become: true
+    connection: ssh
+    remote_user: locthp
+  - name: Install CNI Plugin
+    shell:
+      cmd: "kubectl --kubeconfig ~/.kube/new-cluster.conf apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml"

@@ -29,6 +29,7 @@ variable "proxmox_params" {
 }
 variable "instance_configruations" {
   type = map(object({
+    vmid = string
     cpu = optional(object({
       cores = optional(string, "1")
       sockets = optional(string, "1")

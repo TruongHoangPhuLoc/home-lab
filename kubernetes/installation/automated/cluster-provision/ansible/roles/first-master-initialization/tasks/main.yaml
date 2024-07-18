@@ -1,3 +1,21 @@
 - name: Kubeadm init
   shell: 
     cmd: "kubeadm init --control-plane-endpoint={{ hostvars[groups['k8s-masters'][0]]['control-plane-endpoint'] }} --pod-network-cidr=10.244.0.0/16"
+
+- name: Generate join token
+  shell: kubeadm token create --print-join-command
+  register: kubeadm_join_cmd
+
+- name: Store join command
+  set_fact:
+    kubeadm_join: "{{ kubeadm_join_cmd.stdout }}"
+  when: kubeadm_join_cmd.stdout is defined
+
+- name: Generate Cert Key
+  shell: kubeadm init phase upload-certs --upload-certs
+  register: cert_key
+
+- name: Store Cert Key
+  set_fact:
+    cert_key: "{{ cert_key.stdout_lines[2] }}"
+  when: cert_key.stdout_lines[2] is defined

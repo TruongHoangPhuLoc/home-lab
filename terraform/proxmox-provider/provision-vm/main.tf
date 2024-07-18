@@ -10,7 +10,8 @@ terraform {
 resource "proxmox_vm_qemu" "provision-proxmox-vm" {
   for_each    = var.instance_configruations
   name        = "${each.key}"
-  desc        = ""
+  desc        = "terraform-managed VM"
+  vmid        = each.value.vmid
   target_node = var.target_node
   ### or for a Clone VM operation
   os_type	 = "cloud-init"

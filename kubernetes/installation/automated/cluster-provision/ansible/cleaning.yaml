@@ -1,0 +1,9 @@
+- hosts: k8s-masters:k8s-workers
+  user: locthp
+  become: true
+  gather_facts: yes
+  tasks:
+    - name: clean up kubeadm
+      shell:
+        cmd: "kubeadm reset -f"
+

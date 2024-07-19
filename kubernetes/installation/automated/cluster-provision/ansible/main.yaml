@@ -2,6 +2,7 @@
   remote_user: locthp
   become: true
   roles:
+   - common_handlers
    - { role: essential, when: "inventory_hostname in groups['k8s-masters'] or inventory_hostname in groups['k8s-workers']" }
    - { role: first-master-initialization, when: "groups['k8s-masters'][0] == inventory_hostname"}
    - { role: master-nodes-joining, when: "groups['k8s-masters'][0] != inventory_hostname and inventory_hostname not in groups['k8s-workers']"}
@@ -22,11 +23,13 @@
 
 - hosts: 127.0.0.1
   connection: local
+  roles:
+  - common_handlers
   tasks:
-  - name: Store Kubeconfig on admin's machine
+  - name: Store kubeconfig on admin's machine
     fetch:
       src: /etc/kubernetes/admin.conf
-      dest: ~/.kube/new-cluster.conf
+      dest: ~/.kube/{{ hostvars[groups['k8s-masters'][0]]['cluster_name'] }}.conf
       flat: true
     delegate_to: "{{ groups['k8s-masters'][0] }}"
     become: true
@@ -34,4 +37,34 @@
     remote_user: locthp
   - name: Install CNI Plugin
     shell:
-      cmd: "kubectl --kubeconfig ~/.kube/new-cluster.conf apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml"
+      cmd: "kubectl --kubeconfig ~/.kube/{{ hostvars[groups['k8s-masters'][0]]['cluster_name'] }}.conf apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml"
+  
+  - name: Check status and wait for cluster to be ready
+    shell:
+      cmd: "kubectl --kubeconfig ~/.kube/{{ hostvars[groups['k8s-masters'][0]]['cluster_name'] }}.conf get nodes --no-headers"
+    register: node_status
+    until:  "node_status.stdout_lines | select('search', 'NotReady') | list | length == 0"
+    retries: 10
+    delay: 10
+  - name: Show the output
+    debug:
+      msg: "{{ node_status.stdout_lines }}"
+  - name: Initialize Discord Message
+    set_fact:
+      discord_message: "Cluster {{ hostvars[inventory_hostname]['cluster_name'] }} has been successfully provisioned:\n"
+  - name: Append status of each node
+    set_fact: 
+      discord_message: "{{ discord_message + item + '\n' }}"
+    with_items: "{{ node_status.stdout_lines }}"
+  - name: show discord_message
+    debug:
+      msg: "{{ discord_message }}"
+    changed_when: true
+    notify:
+      - Prepare content of message
+      - Set dashes
+      - Add dashes
+      - Send Discord message
+
+  
+

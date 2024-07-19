@@ -1,6 +1,6 @@
 - name: Kubeadm init
   shell: 
-    cmd: "kubeadm init --control-plane-endpoint={{ hostvars[groups['k8s-masters'][0]]['control-plane-endpoint'] }} --pod-network-cidr=10.244.0.0/16"
+    cmd: "kubeadm init --control-plane-endpoint={{ hostvars[inventory_hostname]['control_plane_endpoint'] }} --pod-network-cidr=10.244.0.0/16"
 
 - name: Generate join token
   shell: kubeadm token create --print-join-command

@@ -1,3 +1,3 @@
-output "ips" {
-  value = concat(module.k8s-master-nodes-provision.instances_ip, module.k8s-worker-nodes-provision.instances_ip)
+output "cluster_output" {
+  value = { "${var.clustername}" : module.k8s-nodes-provision.output_map }
 }

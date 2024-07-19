@@ -1,24 +1,25 @@
-  - name: Prepare content of message
-    ansible.builtin.set_fact:
-        notification: "Host {{ ansible_hostname }} has been upgraded successfully \n"
+  # - name: Prepare content of message
+  #   ansible.builtin.set_fact:
+  #       notification: "{{ hostvars[inventory_hostname]['discord_message'] }}"
+  #   when: hostvars[inventory_hostname]['discord_message'] is defined
 
-  - name: Set dashes
-    ansible.builtin.set_fact:
-        dashes: "-------------------------------------------------------------------------"  
-    when: notification is defined
+  # - name: Set dashes
+  #   ansible.builtin.set_fact:
+  #       dashes: "-------------------------------------------------------------------------"  
+  #   when: notification is defined
 
-  - name: Add dashes
-    ansible.builtin.set_fact:
-      message: "{{ dashes + '\n' + notification + dashes + '\n'  }}"
-    when: notification is defined
-  - name: Send Discord message
-    uri:
-      url: "https://discordapp.com/api/webhooks/1234035793492705382/W8-AVHaXkOG2RjAO6ILK8rfibPAGYdDNU7VSBlg5pGtRry14QzKL9qFMARhsd3sLLYLo"
-      method: POST
-      body_format: json
-      body:
-        content: "{{ message }}"
-      headers:
-          Content-Type: application/json
-      status_code: 204
-    when: message is defined
+  # - name: Add dashes
+  #   ansible.builtin.set_fact:
+  #     message: "{{ dashes + '\n' + notification + dashes + '\n'  }}"
+  #   when: notification is defined
+  # - name: Send Discord message
+  #   uri:
+  #     url: "https://discordapp.com/api/webhooks/1234035793492705382/W8-AVHaXkOG2RjAO6ILK8rfibPAGYdDNU7VSBlg5pGtRry14QzKL9qFMARhsd3sLLYLo"
+  #     method: POST
+  #     body_format: json
+  #     body:
+  #       content: "{{ message }}"
+  #     headers:
+  #         Content-Type: application/json
+  #     status_code: 204
+  #   when: message is defined

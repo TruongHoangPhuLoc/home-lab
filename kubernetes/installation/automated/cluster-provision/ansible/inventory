@@ -4,7 +4,7 @@
 172.16.1.112
 [all:vars]
 ansible_ssh_common_args='-o StrictHostKeyChecking=accept-new'
-control-plane-endpoint='172.16.1.230'
+control_plane_endpoint='172.16.1.230'
 
 
 [k8s-masters]

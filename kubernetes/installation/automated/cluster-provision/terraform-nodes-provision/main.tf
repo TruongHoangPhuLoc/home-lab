@@ -77,7 +77,7 @@ instance_configruations = {
         ip = "172.16.1.233"
     }
   }
-    k8s-worker-01 = {
+  k8s-worker-01 = {
     vmid = "203"
     cpu = {
       cores = 2
@@ -135,16 +135,8 @@ resource "ansible_group" "group" {
   variables = {
     ansible_ssh_common_args = "'-o StrictHostKeyChecking=accept-new'",
     control_plane_endpoint="'172.16.1.230'",
-    cluster_name="Terraform-Provisioned-Cluster"
+    cluster_name=var.clustername
   }
 }
-# resource "ansible_playbook" "playbook" {
-#   for_each = toset(module.k8s-nodes-provision.instances_ip)
-#   depends_on = [ null_resource.waiting_instances_ready ]
-#   playbook   = "../ansible/main.yaml"
-#   name       = each.key
-#   extra_vars = {
-#     ansible_ssh_common_args = "-o StrictHostKeyChecking=accept-new"
-#   }
-# }
+
 

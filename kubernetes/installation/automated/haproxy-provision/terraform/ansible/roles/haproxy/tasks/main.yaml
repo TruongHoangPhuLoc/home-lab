@@ -1,0 +1,63 @@
+- name: Update the Ubuntu servers to be latest
+  apt:
+    update_cache: true
+    force_apt_get: true
+    upgrade: "yes"
+  when: ansible_distribution == "Ubuntu"
+  async: 7200
+  poll: 5
+  register: update_result
+
+- name: Set Discord Message
+  set_fact:
+    discord_message: "Host {{ ansible_hostname }} has been upgraded successfully \n"
+  changed_when: update_result.changed
+  when: not update_result.failed
+  notify:
+    - Prepare content of message
+    - Set dashes
+    - Add dashes
+    - Send Discord message
+- name: Flush Handlers after update
+  meta: flush_handlers
+
+- name: Install neccessary packages
+  ansible.builtin.apt:
+    force_apt_get: true
+    name:
+    - haproxy
+    - keepalived
+- name: Check if the default configuration exists
+  stat: 
+    path: /etc/haproxy/haproxy.cfg  
+  register: default_haproxy_config
+- name: Backup default configuration file
+  shell:
+    cmd: mv /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.bak
+  when: default_haproxy_config.stat.exists
+  
+- name: Load HAProxy configuration file to Servers 
+  template:
+    src: templates/haproxy.j2
+    dest: /etc/haproxy/haproxy.cfg
+
+- name: Load Keepalived configuration file to Servers
+  template:
+    src: templates/keepalived.j2
+    dest: /etc/keepalived/keepalived.conf
+
+
+- name: Restart Keepalived to take effect new configuration
+  ansible.builtin.systemd_service:
+    name: keepalived
+    state: restarted
+    enabled: true
+
+- name: Restart HAproxy to take effect new configuration
+  ansible.builtin.systemd_service:
+    name: haproxy
+    state: restarted
+    enabled: true
+
+
+

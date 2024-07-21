@@ -41,6 +41,42 @@ proxmox_params = {
 }
 target_node = "geekom-dev"
 instance_configruations = {
+  terraform-haproxy-01 = {
+    vmid = "210"
+    cpu = {
+      cores = 2
+    }
+    memory = {
+      amount = 4096
+    }
+    networking = {
+      ip = "172.16.1.190"
+    }
+  }
+  terraform-haproxy-02 = {
+    vmid = "211"
+    cpu = {
+        cores = 2
+    }
+    memory = {
+        amount = 4096
+    }
+    networking = {
+      ip = "172.16.1.191"
+    }
+  }
+  terraform-haproxy-03 = {
+    vmid = "212"
+    cpu = {
+        cores = 2
+    }
+    memory = {
+        amount = 4096
+    }
+    networking = {
+      ip = "172.16.1.192"
+    }
+  }
   k8s-master-01 = {
     vmid = "200"
     cpu = {
@@ -101,6 +137,18 @@ instance_configruations = {
       ip = "172.16.1.235"
     }
   }
+  k8s-worker-03 = {
+    vmid = "205"
+    cpu = {
+        cores = 2
+    }
+    memory = {
+        amount = 4096
+    }
+    networking = {
+      ip = "172.16.1.236"
+    }
+  }
 }
 }
 # https://stackoverflow.com/questions/62403030/terraform-wait-till-the-instance-is-reachable
@@ -122,7 +170,7 @@ resource "ansible_host" "hosts" {
   for_each = module.k8s-nodes-provision.output_map
   name = each.value
   #groups = [ strcontains(each.key,"k8s-master") ? "k8s-masters":"", strcontains(each.key,"k8s-worker") ? "k8s-workers":""]
-  groups = [ coalesce(strcontains(each.key,"k8s-master") ? "k8s-masters":"", strcontains(each.key,"k8s-worker") ? "k8s-workers":"") ]
+  groups = [ coalesce(strcontains(each.key,"k8s-master") ? "k8s-masters":"", strcontains(each.key,"k8s-worker") ? "k8s-workers":"", strcontains(each.key,"haproxy-01") ? "haproxy-master":"", ! strcontains(each.key,"haproxy-01") ? "haproxy-slave":""), strcontains(each.key,"haproxy") ? "haproxy":"all" ]
 }
 resource "null_resource" "running-ansible" {
   depends_on = [ ansible_host.hosts ]
@@ -133,8 +181,8 @@ resource "null_resource" "running-ansible" {
 resource "ansible_group" "group" {
   name     = "all"
   variables = {
-    ansible_ssh_common_args = "'-o StrictHostKeyChecking=accept-new'",
-    control_plane_endpoint="'172.16.1.230'",
+    ansible_ssh_common_args = "-o StrictHostKeyChecking=accept-new",
+    control_plane_endpoint="172.16.1.180",
     cluster_name=var.clustername
   }
 }

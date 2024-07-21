@@ -1,8 +1,8 @@
-- hosts: all
-  remote_user: locthp
+- hosts: localhost
+  connection: local
   become: true
   gather_facts: no
   tasks:
     - name: print vars
       debug:
-        msg: "{{ control_plane_endpoint }}"
+        msg: "{{ groups['all'] }}"

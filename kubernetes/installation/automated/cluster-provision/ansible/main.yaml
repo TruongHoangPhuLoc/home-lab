@@ -1,11 +1,22 @@
+- hosts: 127.0.0.1
+  connection: local
+  tasks:
+  - name: Rescan SSH key
+    #description: "Rescan the keys for newly created Hosts to avoid overlapping if they exist already"
+    shell:
+      cmd: "ssh-keygen -R {{ item }} && ssh-keyscan -H {{ item }} >> ~/.ssh/known_hosts"
+    with_items: "{{ groups['all'] }}"
+
 - hosts: all
   remote_user: locthp
   become: true
   roles:
    - common_handlers
-   - { role: essential, when: "inventory_hostname in groups['k8s-masters'] or inventory_hostname in groups['k8s-workers']" }
+   - essential
+   - { role: haproxy, when: "inventory_hostname in groups['haproxy']" }
+   - { role: k8s-tools, when: "inventory_hostname in groups['k8s-masters'] or inventory_hostname in groups['k8s-workers']" }
    - { role: first-master-initialization, when: "groups['k8s-masters'][0] == inventory_hostname"}
-   - { role: master-nodes-joining, when: "groups['k8s-masters'][0] != inventory_hostname and inventory_hostname not in groups['k8s-workers']"}
+   - { role: master-nodes-joining, when: "groups['k8s-masters'][0] != inventory_hostname and inventory_hostname in groups['k8s-masters']"}
    - { role: worker-nodes-joining, when: "inventory_hostname in groups['k8s-workers']" }
 
 

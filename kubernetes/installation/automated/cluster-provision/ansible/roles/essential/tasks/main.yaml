@@ -8,17 +8,17 @@
   poll: 5
   register: update_result
 
-# - name: Set Discord Message
-#   set_fact:
-#     discord_message: "Host {{ ansible_hostname }} has been upgraded successfully \n"
-#   changed_when: update_result.changed
-#   when: not update_result.failed
-#   notify:
-#     - Prepare content of message
-#     - Set dashes
-#     - Add dashes
-#     - Send Discord message
-# - name: Flush Handlers after update
-#   meta: flush_handlers
+- name: Set Discord Message
+  set_fact:
+    discord_message: "Host {{ ansible_hostname }} has been provisioned and upgraded successfully \n"
+  changed_when: update_result.changed
+  when: not update_result.failed
+  notify:
+    - Prepare content of message
+    - Set dashes
+    - Add dashes
+    - Send Discord message
+- name: Flush Handlers after update
+  meta: flush_handlers
 
 

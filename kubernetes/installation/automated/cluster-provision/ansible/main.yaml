@@ -57,7 +57,7 @@
     with_items: "{{ node_status.stdout_lines }}"
   - name: Send message to Discord
     debug:
-      msg: "Updating cluster status to Discord....."
+      msg: "Updating Discord with the cluster status....."
     changed_when: true
     notify:
       - Prepare content of message

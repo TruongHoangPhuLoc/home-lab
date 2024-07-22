@@ -22,4 +22,8 @@
       headers:
           Content-Type: application/json
       status_code: 204
+    register: message_result
+    retries: 10
+    delay: 5
+    until: not message_result.failed
     when: message is defined

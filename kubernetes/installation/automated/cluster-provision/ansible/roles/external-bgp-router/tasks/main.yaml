@@ -7,11 +7,11 @@
     block: |
         net.ipv4.ip_forward = 1
         net.ipv4.fib_multipath_hash_policy = 1
-  register: teak_result
+  register: tweak_result
 - name: Apply new teaks defined above
   shell:
     cmd:  "sysctl --system"
-  when: teak_result.changed
+  when: tweak_result.changed
 
 
 - name: Install neccessary packages

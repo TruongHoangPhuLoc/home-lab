@@ -24,13 +24,13 @@
     dest: /etc/keepalived/keepalived.conf
 
 
-- name: Restart Keepalived to take effect new configuration
+- name: Restart Keepalived for the new configuration to take effect
   ansible.builtin.systemd_service:
     name: keepalived
     state: restarted
     enabled: true
 
-- name: Restart HAproxy to take effect new configuration
+- name: Restart HAproxy for the new configuration to take effect
   ansible.builtin.systemd_service:
     name: haproxy
     state: restarted

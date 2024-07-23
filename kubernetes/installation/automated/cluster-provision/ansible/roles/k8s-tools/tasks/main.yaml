@@ -96,7 +96,7 @@
           path: /etc/containerd/config.toml
           regexp: "SystemdCgroup \\= false"
           replace: "SystemdCgroup = true"
-      - name: Restart Containerd to take effect previous step
+      - name: Restart Containerd for the previous modification to take effect
         ansible.builtin.systemd_service:
           name: containerd
           state: restarted

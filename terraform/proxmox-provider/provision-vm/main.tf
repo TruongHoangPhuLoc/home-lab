@@ -20,7 +20,7 @@ resource "proxmox_vm_qemu" "provision-proxmox-vm" {
   cores = each.value.cpu.cores
   sockets = each.value.cpu.sockets
   memory = each.value.memory.amount
-  scsihw = "virtio-scsi-pci"
+  scsihw = "virtio-scsi-single"
   disks {
     ide {
         ide0 {

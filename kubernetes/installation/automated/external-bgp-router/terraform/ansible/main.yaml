@@ -1,0 +1,16 @@
+- hosts: 127.0.0.1
+  connection: local
+  tasks:
+  - name: Rescan SSH key
+    #description: "Rescan the keys for newly created Hosts to avoid overlapping if they exist already"
+    shell:
+      cmd: "ssh-keygen -R {{ item }} && ssh-keyscan -H {{ item }} >> ~/.ssh/known_hosts"
+    with_items: "{{ groups['all'] }}"
+
+- hosts: all
+  remote_user: locthp
+  become: true
+  roles:
+   - common_handlers
+   - essential
+   - { role : external-bgp-router, when: "inventory_hostname in groups['external-bgp-router']"}

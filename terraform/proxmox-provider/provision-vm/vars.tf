@@ -47,7 +47,7 @@ variable "instance_configruations" {
             cache      = optional(string, "")
             emulatessd = optional(bool, false)
             format     = optional(string, "raw")
-            iothread   = optional(bool, true)
+            iothread   = optional(bool, false)
             replicate  = optional(bool, true)
             size       = optional(string, "25G")
             storage    = optional(string, "local-lvm")

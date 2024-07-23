@@ -14,10 +14,12 @@
    - common_handlers
    - essential
    - { role: haproxy, when: "inventory_hostname in groups['haproxy']" }
+   - { role : external-bgp-router, when: "inventory_hostname in groups['external-bgp-router']"}
    - { role: k8s-tools, when: "inventory_hostname in groups['k8s-masters'] or inventory_hostname in groups['k8s-workers']" }
    - { role: first-master-initialization, when: "groups['k8s-masters'][0] == inventory_hostname"}
    - { role: master-nodes-joining, when: "groups['k8s-masters'][0] != inventory_hostname and inventory_hostname in groups['k8s-masters']"}
    - { role: worker-nodes-joining, when: "inventory_hostname in groups['k8s-workers']" }
+   
 
 
 - hosts: 127.0.0.1
@@ -45,6 +47,24 @@
     until:  "node_status.stdout_lines | select('search', 'NotReady') | list | length == 0"
     retries: 10
     delay: 10
+  - name: Install Metallb
+    shell:
+      cmd: "kubectl --kubeconfig ~/.kube/{{ hostvars[groups['k8s-masters'][0]]['cluster_name'] }}.conf apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.7/config/manifests/metallb-native.yaml"
+  - name: Check status of Metallb and wait for pods to be ready
+    shell:
+      cmd: "kubectl --kubeconfig ~/.kube/{{ hostvars[groups['k8s-masters'][0]]['cluster_name'] }}.conf get pods -n metallb-system --no-headers"
+    register: metallb_status
+    until:  "metallb_status.stdout_lines | reject('search', '1/1') | list | length == 0"
+    retries: 100
+    delay: 5
+
+  - name: Apply configuration
+    block:
+      - template:
+          src: templates/metallb/configuration.j2
+          dest: files/metallb/configuration.yaml
+      - shell:
+          cmd: "kubectl --kubeconfig ~/.kube/{{ hostvars[groups['k8s-masters'][0]]['cluster_name'] }}.conf apply -f ./files/metallb/configuration.yaml "
   - name: Show the output
     debug:
       msg: "{{ node_status.stdout_lines }}"

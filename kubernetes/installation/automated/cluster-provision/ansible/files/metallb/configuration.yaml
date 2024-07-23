@@ -1,0 +1,32 @@
+apiVersion: metallb.io/v1beta2
+kind: BGPPeer
+metadata:
+  name: peer-to-bird-router
+  namespace: metallb-system
+spec:
+  myASN: 64500
+  peerASN: 64501
+  peerAddress: 172.16.1.170
+
+---
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: externalip-pool
+  namespace: metallb-system
+spec:
+  addresses:
+  - 172.16.3.0/24
+  avoidBuggyIPs: true
+---
+apiVersion: metallb.io/v1beta1
+kind: BGPAdvertisement
+metadata:
+  name: advertisement-configuration
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+  - externalip-pool
+
+
+

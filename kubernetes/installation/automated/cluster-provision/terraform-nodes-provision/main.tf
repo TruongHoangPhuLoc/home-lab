@@ -6,7 +6,10 @@ terraform {
     }
   }
 }
-
+variable "address_pool" {
+  type = string
+  default = "172.16.3.0/24"
+}
 variable "clustername" {
   type = string
   default = "terraform-provisioned-cluster"
@@ -149,6 +152,18 @@ instance_configruations = {
       ip = "172.16.1.236"
     }
   }
+  external-bgp-router = {
+    vmid = "215"
+    cpu = {
+      cores = 2
+    }
+    memory = {
+      amount = 2048
+    }
+    networking = {
+      ip = "172.16.1.170"
+    }
+  }
 }
 }
 # https://stackoverflow.com/questions/62403030/terraform-wait-till-the-instance-is-reachable
@@ -170,7 +185,7 @@ resource "ansible_host" "hosts" {
   for_each = module.k8s-nodes-provision.output_map
   name = each.value
   #groups = [ strcontains(each.key,"k8s-master") ? "k8s-masters":"", strcontains(each.key,"k8s-worker") ? "k8s-workers":""]
-  groups = [ coalesce(strcontains(each.key,"k8s-master") ? "k8s-masters":"", strcontains(each.key,"k8s-worker") ? "k8s-workers":"", strcontains(each.key,"haproxy-01") ? "haproxy-master":"", ! strcontains(each.key,"haproxy-01") ? "haproxy-slave":""), strcontains(each.key,"haproxy") ? "haproxy":"all" ]
+  groups = [ coalesce(strcontains(each.key,"k8s-master") ? "k8s-masters":"", strcontains(each.key,"k8s-worker") ? "k8s-workers":"", strcontains(each.key,"haproxy-01") ? "haproxy-master":"", ! strcontains(each.key,"haproxy-01") ? "haproxy-slave":""), strcontains(each.key,"haproxy") ? "haproxy":"all", strcontains(each.key,"external-bgp-router") ? "external-bgp-router":"all"]
 }
 resource "null_resource" "running-ansible" {
   depends_on = [ ansible_host.hosts ]
@@ -178,7 +193,7 @@ resource "null_resource" "running-ansible" {
     command = "ansible-playbook -i inventory.yaml ../ansible/main.yaml"
   }
 }
-resource "ansible_group" "group" {
+resource "ansible_group" "group-all" {
   name     = "all"
   variables = {
     ansible_ssh_common_args = "-o StrictHostKeyChecking=accept-new",
@@ -186,5 +201,12 @@ resource "ansible_group" "group" {
     cluster_name=var.clustername
   }
 }
+resource "ansible_group" "group-external-bgp-router" {
+  name     = "external-bgp-router"
+  variables = {
+    address_pool = var.address_pool
+  }
+}
+
 
 

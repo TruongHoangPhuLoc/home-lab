@@ -1,0 +1,33 @@
+apiVersion: metallb.io/v1beta2
+kind: BGPPeer
+metadata:
+  name: peer-to-bird-router
+  namespace: metallb-system
+spec:
+  myASN: 64500
+  peerASN: 64501
+  peerAddress: {{ hostvars[groups['external-bgp-router'][0]]['ansible_default_ipv4']['address'] }}
+
+---
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: externalip-pool
+  namespace: metallb-system
+spec:
+  avoidBuggyIPs: true
+  addresses:
+  - {{ hostvars[groups['external-bgp-router'][0]]['address_pool'] }}
+
+---
+apiVersion: metallb.io/v1beta1
+kind: BGPAdvertisement
+metadata:
+  name: advertisement-configuration
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+  - externalip-pool
+
+
+

@@ -1,0 +1,45 @@
+# ToDo: Tuning router to be able to forward package and change hash policy
+- name: Tweak sysctl params
+  ansible.builtin.blockinfile:
+    append_newline: true
+    create: true
+    path: /etc/sysctl.d/bird.conf
+    block: |
+        net.ipv4.ip_forward = 1
+        net.ipv4.fib_multipath_hash_policy = 1
+  register: teak_result
+- name: Apply new teaks defined above
+  shell:
+    cmd:  "sysctl --system"
+  when: teak_result.changed
+
+
+- name: Install neccessary packages
+  ansible.builtin.apt:
+    force_apt_get: true
+    name:
+    - bird2
+- name: Check if the default configuration exists
+  stat: 
+    path: /etc/bird/bird.conf
+  register: default_bird_config
+
+- name: Backup default configuration file
+  shell:
+    cmd: mv /etc/bird/bird.conf /etc/bird/bird.conf.bak
+  when: default_bird_config.stat.exists
+
+- name: Load Bird configuration file
+  template:
+    src: templates/bird.j2
+    dest: /etc/bird/bird.conf
+  
+- name: Restart Bird for the new configuration to take effect
+  ansible.builtin.systemd_service:
+    name: bird
+    state: restarted
+    enabled: true
+
+
+
+

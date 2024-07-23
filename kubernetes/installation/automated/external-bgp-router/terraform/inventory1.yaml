@@ -1,0 +1,21 @@
+all:
+  children:
+    external-bgp-router:
+      hosts:
+        172.16.1.170:
+          ansible_ssh_common_args: '''-o StrictHostKeyChecking=accept-new'''
+          control_plane_endpoint: '''172.16.1.180'''
+    k8s-workers:
+      hosts:
+        172.16.1.234:
+          ansible_ssh_common_args: -o StrictHostKeyChecking=accept-new
+          cluster_name: terraform-provisioned-cluster
+          control_plane_endpoint: 172.16.1.180
+        172.16.1.235:
+          ansible_ssh_common_args: -o StrictHostKeyChecking=accept-new
+          cluster_name: terraform-provisioned-cluster
+          control_plane_endpoint: 172.16.1.180
+        172.16.1.236:
+          ansible_ssh_common_args: -o StrictHostKeyChecking=accept-new
+          cluster_name: terraform-provisioned-cluster
+          control_plane_endpoint: 172.16.1.180

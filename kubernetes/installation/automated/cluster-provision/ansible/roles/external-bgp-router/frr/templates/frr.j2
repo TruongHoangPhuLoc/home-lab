@@ -8,7 +8,7 @@
 # avoid this, you can edit this file manually before starting FRR, or instruct
 # vtysh to write configuration to a different file.
 log syslog informational
-
+log file /var/log/frr/frr.log debugging
 
 
 nexthop-group k8s-worker-pool

@@ -1,3 +1,17 @@
+- name: Tweak sysctl params
+  ansible.builtin.blockinfile:
+    append_newline: true
+    create: true
+    path: /etc/sysctl.d/frr.conf
+    block: |
+        net.ipv4.ip_forward = 1
+        net.ipv4.fib_multipath_hash_policy = 1
+  register: tweak_result
+- name: Apply new teaks defined above
+  shell:
+    cmd:  "sysctl --system"
+  when: tweak_result.changed
+
 - name: Install FRR
   block:
   - name: Check whether FRR already existed or not

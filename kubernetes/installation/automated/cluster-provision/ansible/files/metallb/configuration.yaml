@@ -15,9 +15,10 @@ metadata:
   name: externalip-pool
   namespace: metallb-system
 spec:
+  avoidBuggyIPs: true
   addresses:
   - 172.16.3.0/24
-  avoidBuggyIPs: true
+
 ---
 apiVersion: metallb.io/v1beta1
 kind: BGPAdvertisement

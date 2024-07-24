@@ -14,7 +14,7 @@
    - common_handlers
    - essential
    - { role: haproxy, when: "inventory_hostname in groups['haproxy']" }
-   - { role : external-bgp-router, when: "inventory_hostname in groups['external-bgp-router']"}
+   - { role : external-bgp-router/frr, when: "inventory_hostname in groups['external-bgp-router']"}
    - { role: k8s-tools, when: "inventory_hostname in groups['k8s-masters'] or inventory_hostname in groups['k8s-workers']" }
    - { role: first-master-initialization, when: "groups['k8s-masters'][0] == inventory_hostname"}
    - { role: master-nodes-joining, when: "groups['k8s-masters'][0] != inventory_hostname and inventory_hostname in groups['k8s-masters']"}

@@ -32,6 +32,8 @@
     ansible.builtin.apt_repository:
       repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
       state: present
+      filename: docker
+      update_cache: true
   - name: Check if k8s key already existed
     ansible.builtin.stat:
         path: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
@@ -43,8 +45,9 @@
   - name: Add Kubenetes Key
     ansible.builtin.apt_repository:
       repo: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /"
-      filename: kubernetes.list
+      filename: kubernetes
       state: present
+      update_cache: true
 # Install Containerd and Kubernetes packages
 - name: Install Containerd and Kubernetes packages
   ansible.builtin.apt:
@@ -91,7 +94,7 @@
       - name: Generate Containerd default configuration file
         shell:
           cmd: "containerd config default | tee /etc/containerd/config.toml >/dev/null 2>&1"
-      - name: Modify Cgroup driver to systemd
+      - name: Switch Cgroup driver to systemd
         ansible.builtin.replace:
           path: /etc/containerd/config.toml
           regexp: "SystemdCgroup \\= false"

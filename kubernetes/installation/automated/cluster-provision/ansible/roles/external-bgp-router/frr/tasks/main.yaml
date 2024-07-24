@@ -1,0 +1,51 @@
+- name: Install FRR
+  block:
+  - name: Check whether FRR already existed or not
+    ansible.builtin.stat:
+      path: /usr/share/keyrings/frrouting.gpg
+    register: frr_key_existence 
+  - name: Download FRR Key
+    shell:
+      cmd: "curl -s https://deb.frrouting.org/frr/keys.gpg | sudo tee /usr/share/keyrings/frrouting.gpg > /dev/null"
+    when: not frr_key_existence.stat.exists
+  - name: Add FRR repository
+    ansible.builtin.apt_repository:
+      repo: "deb [signed-by=/usr/share/keyrings/frrouting.gpg] https://deb.frrouting.org/frr {{ ansible_distribution_release }} frr-stable"
+      state: present
+      filename: frr
+      update_cache: true
+  - name: Install FRR packages
+    ansible.builtin.apt:
+      force_apt_get: true
+      name:
+      - frr
+      - frr-pythontools
+      state: latest
+
+- name: Check if the default configuration exists
+  stat: 
+    path: /etc/frr/frr.conf
+  register: default_frr_config
+
+- name: Backup default configuration file
+  shell:
+    cmd: mv /etc/frr/frr.conf /etc/frr/frr.conf.bak
+  when: default_frr_config.stat.exists
+
+- name: Configure FRR
+  block:
+  - name: Load FRR configuration file
+    template:
+      src: templates/frr.j2
+      dest: /etc/frr/frr.conf
+  - name: Enable BGPD
+    ansible.builtin.replace:
+      path: /etc/frr/daemons
+      regexp: "bgpd=no"
+      replace: "bgpd=yes"
+- name: Restart FRR for new configuration to take effect
+  ansible.builtin.systemd_service:
+    name: frr
+    state: restarted
+    enabled: true
+  

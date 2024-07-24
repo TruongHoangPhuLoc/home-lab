@@ -20,9 +20,7 @@ nexthop-group k8s-worker-pool
 router bgp 64501
  no bgp ebgp-requires-policy
  bgp router-id {{ inventory_hostname }}
- address-family ipv4 unicast
 {% for host in groups['k8s-workers'] %}
   neighbor {{ host }} remote-as 64500
 {% endfor %}
- exit-address-family
 !

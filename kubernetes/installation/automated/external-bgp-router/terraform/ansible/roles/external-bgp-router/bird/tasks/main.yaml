@@ -1,0 +1,30 @@
+- name: Install neccessary packages
+  ansible.builtin.apt:
+    force_apt_get: true
+    name:
+    - bird2
+# ToDo: Tuning router to be able to forward package and change hash policy
+- name: Check if the default configuration exists
+  stat: 
+    path: /etc/bird/bird.conf
+  register: default_bird_config
+
+- name: Backup default configuration file
+  shell:
+    cmd: mv /etc/bird/bird.conf /etc/bird/bird.conf.bak
+  when: default_bird_config.stat.exists
+
+- name: Load Bird configuration file
+  template:
+    src: templates/bird.j2
+    dest: /etc/bird/bird.conf
+  
+- name: Restart Bird to take effect new configuration
+  ansible.builtin.systemd_service:
+    name: bird
+    state: restarted
+    enabled: true
+
+
+
+

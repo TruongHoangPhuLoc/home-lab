@@ -1,0 +1,4 @@
+- targets:
+  - '172.16.1.244:9100'
+  labels:
+    job: 'node-exporter'

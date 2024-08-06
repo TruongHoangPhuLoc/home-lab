@@ -1,5 +1,5 @@
 groups:
-- name: Example
+- name: Instance_Health
   rules:
     - alert: InstanceDown
       expr: up == 0

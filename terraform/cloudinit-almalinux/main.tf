@@ -13,20 +13,20 @@ provider "proxmox"{
   # leave tls_insecure set to true unless you have your proxmox SSL certificate situation fully sorted out (if you do, you will know)
   pm_tls_insecure = true
   # Change
-  # pm_user="user"
+  #pm_user
   # Change
-  # pm_password="Mypassword"
+  #pm_password
   pm_debug = true
 }
 locals {
-  vm_name          = "almalinux"
+  vm_name          = "rockylinux"
   pve_node         = "geekom-dev"
   iso_storage_pool = "local"
 }
 
 resource "proxmox_vm_qemu" "provision-proxmox-vms" {
   count       = 1
-  name        = "almalinux-vm"
+  name        = "rockylinux-vm"
   desc        = "desc"
   target_node = "geekom-dev"
   
@@ -37,7 +37,7 @@ resource "proxmox_vm_qemu" "provision-proxmox-vms" {
   cores = 1
   sockets = 1
   memory = 2048
-  scsihw = "virtio-scsi-pci"
+  scsihw = "virtio-scsi-single"
   cloudinit_cdrom_storage = "local-lvm"
   agent = 1
   disks {

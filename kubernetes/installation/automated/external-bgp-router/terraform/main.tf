@@ -35,10 +35,13 @@ proxmox_params = {
   pm_debug = var.pm_debug
   pm_tls_insecure = var.pm_tls_insecure
 }
+misc = {
+      template = "cloudinit-ubuntu-24.04-template"
+}
 target_node = "geekom-dev"
-instance_configruations = {
-  external-bgp-router = {
-    vmid = "215"
+instances_configruations = {
+  external-bgp-router-cloned = {
+    vmid = "216"
     cpu = {
       cores = 2
     }
@@ -65,25 +68,25 @@ resource "null_resource" "waiting_instances_ready" {
     inline = ["while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 1; done"]
   }
 }
-resource "ansible_host" "hosts" {
-  depends_on = [ null_resource.waiting_instances_ready ]
-  for_each = module.external-bgp-router.output_map
-  name = each.value
-  #groups = [ strcontains(each.key,"k8s-master") ? "k8s-masters":"", strcontains(each.key,"k8s-worker") ? "k8s-workers":""]
-  groups = [ coalesce(strcontains(each.key,"external-bgp-router") ? "external-bgp-router":"all"),]
-}
-resource "null_resource" "running-ansible" {
-  depends_on = [ ansible_host.hosts ]
-    provisioner "local-exec" {
-    command = "ansible-playbook -i inventory.yaml ../ansible/main.yaml"
-  }
-}
-resource "ansible_group" "group" {
-  name     = "all"
-  variables = {
-    ansible_ssh_common_args = "'-o StrictHostKeyChecking=accept-new'",
-    control_plane_endpoint="'172.16.1.180'",
-  }
-}
+# resource "ansible_host" "hosts" {
+#   depends_on = [ null_resource.waiting_instances_ready ]
+#   for_each = module.external-bgp-router.output_map
+#   name = each.value
+#   #groups = [ strcontains(each.key,"k8s-master") ? "k8s-masters":"", strcontains(each.key,"k8s-worker") ? "k8s-workers":""]
+#   groups = [ coalesce(strcontains(each.key,"external-bgp-router") ? "external-bgp-router":"all"),]
+# }
+# resource "null_resource" "running-ansible" {
+#   depends_on = [ ansible_host.hosts ]
+#     provisioner "local-exec" {
+#     command = "ansible-playbook -i inventory.yaml ../ansible/main.yaml"
+#   }
+# }
+# resource "ansible_group" "group" {
+#   name     = "all"
+#   variables = {
+#     ansible_ssh_common_args = "'-o StrictHostKeyChecking=accept-new'",
+#     control_plane_endpoint="'172.16.1.180'",
+#   }
+# }
 
 

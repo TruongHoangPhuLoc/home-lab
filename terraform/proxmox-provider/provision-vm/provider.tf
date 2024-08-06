@@ -6,4 +6,6 @@ provider "proxmox"{
   pm_user = var.proxmox_params.pm_user
   pm_password = var.proxmox_params.pm_password
   pm_debug = var.proxmox_params.pm_debug
+  pm_parallel = var.proxmox_params.pm_parallel
+  pm_timeout = var.proxmox_params.pm_timeout
 }

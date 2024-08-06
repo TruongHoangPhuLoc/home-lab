@@ -6,5 +6,5 @@
 # }
 
 output "output_map" {
-  value = tomap({ for key, value in var.instance_configruations: key => value.networking.ip  })
+  value = tomap({ for key, value in var.instances_configurations: key => value.networking.ip  })
 }

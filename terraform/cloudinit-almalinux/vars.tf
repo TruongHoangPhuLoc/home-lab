@@ -8,5 +8,5 @@ variable "proxmox_host" {
     default = "dell-03"
 }
 variable "template_name" {
-    default = "VM 9010"
+    default = "cloudinit-rockylinux-9-template"
 }

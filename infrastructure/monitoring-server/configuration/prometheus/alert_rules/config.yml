@@ -1,0 +1,81 @@
+groups:
+- name: Example
+  rules:
+    - alert: InstanceDown
+      expr: up == 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Instance [{{ $labels.instance }}] down"
+        description: "[{{ $labels.instance }}] of job {{ $labels.job }} has been down for more than 15 seconds."
+
+- name: Disk_IO_Alerts
+  rules:
+  # HighRead if the rate of read over the last 5m is higher than 200M 
+  - alert: HighDiskReadRate_Last5m
+    expr: ( disk_io:read_bytes_rate_last5m / ( 1024 * 1024 ) ) > 200
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High disk read rate on instance {{ $labels.instance }}"
+      description: "Disk read rate is above 200 MB/s for more than 5 minute on instance {{ $labels.instance }}."
+  # HighWrite if the rate of write over the last 5m is higher than 200M 
+  - alert: HighDiskWriteRate_Last5m
+    expr: ( disk_io:write_bytes_rate_last5m / ( 1024 * 1024 ) ) > 200 
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High disk write rate on instance {{ $labels.instance }}"
+      description: "Disk write rate is above 200 MB/s for more than 5 minute on instance {{ $labels.instance }}."
+
+  - alert: HighDiskIO
+    expr: disk_io:io_now > 5  # Example threshold of 10 I/O operations
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High disk I/O on instance {{ $labels.instance }}"
+      description: "Number of ongoing I/O operations is above 5 for more than 5 minute on instance {{ $labels.instance }}."
+
+- name: Memory_Alerts
+  rules:
+    - alert: Available_Memory_Low
+      expr: memory:available_remaining < 50
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High Memory Usage on instance [{{ $labels.instance }}]"
+        description: "Available Memory of{{ $labels.instance }} is lower than 50%, {{ printf \"%.2f\" $value }}% in detail"
+
+- name: FS_Usage_Alerts
+  rules:
+  - alert: Available_FS_Low
+    expr: fs_usage:fs_available_percentage < 20
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High FS Usage on instance [{{ $labels.instance }}]"
+      description: "Available FS of {{ $labels.instance }} - {{ $labels.device }} is lower than 20%"
+- name: CPU_Usage_Alerts
+  rules:
+  - alert: High_TotalCPU_Usage_Percentage_Last5m
+    expr: cpu_usage:total_percentage_last5m > 70
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High Total CPU Usage on instance [{{ $labels.instance }}]"
+      description: "Total CPU Usage {{ $labels.instance }} is higher than 70% for more than 5m"
+  - alert: High_CPU_Usage_Percentage_PerCore_Last5m
+    expr: cpu_usage:percentage_percore_last5m > 70
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High CPU Usage on instance [{{ $labels.instance }}], core [{{ $labels.cpu }}]"
+      description: "High CPU Usage on {{ $labels.instance }} and on core {{ $labels.cpu }} is higher than 70% for more than 5m"

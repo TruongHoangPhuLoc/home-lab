@@ -2,7 +2,7 @@ helm repo add prometheus-community https://prometheus-community.github.io/helm-c
 helm repo update
 helm pull prometheus-community/kube-prometheus-stack --untar
 
-helm upgrade  kube-prometheus-stack \
+helm install kube-prometheus-stack \
     --create-namespace \
     --namespace monitoring ./ \
     -f ./values.yaml

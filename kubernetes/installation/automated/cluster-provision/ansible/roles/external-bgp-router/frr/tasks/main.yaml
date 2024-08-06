@@ -52,11 +52,16 @@
     template:
       src: templates/frr.j2
       dest: /etc/frr/frr.conf
-  - name: Enable BGPD
-    ansible.builtin.replace:
-      path: /etc/frr/daemons
-      regexp: "bgpd=no"
-      replace: "bgpd=yes"
+  - name: Enable daemons
+    block:
+    - ansible.builtin.replace:
+       path: /etc/frr/daemons
+       regexp: "bgpd=no"
+       replace: "bgpd=yes"
+    - ansible.builtin.replace:
+        path: /etc/frr/daemons
+        regexp: "pbrd=no"
+        replace: "pbrd=yes"
 - name: Restart FRR for new configuration to take effect
   ansible.builtin.systemd_service:
     name: frr

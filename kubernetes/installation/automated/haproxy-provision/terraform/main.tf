@@ -36,7 +36,7 @@ proxmox_params = {
   pm_tls_insecure = var.pm_tls_insecure
 }
 target_node = "geekom-dev"
-instance_configruations = {
+instances_configruations = {
   terraform-haproxy-01 = {
     vmid = "210"
     cpu = {

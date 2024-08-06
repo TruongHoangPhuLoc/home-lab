@@ -25,9 +25,11 @@ variable "proxmox_params" {
         pm_password = string
         pm_debug = bool
         pm_tls_insecure = bool
+        pm_parallel = optional(number, 4)
+        pm_timeout = optional(number, 300)
     })
 }
-variable "instance_configruations" {
+variable "instances_configurations" {
   type = map(object({
     vmid = string
     cpu = optional(object({

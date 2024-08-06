@@ -8,7 +8,7 @@ terraform {
 }
 
 resource "proxmox_vm_qemu" "provision-proxmox-vm" {
-  for_each    = var.instance_configruations
+  for_each    = var.instances_configurations
   name        = "${each.key}"
   desc        = "terraform-managed VM"
   vmid        = each.value.vmid

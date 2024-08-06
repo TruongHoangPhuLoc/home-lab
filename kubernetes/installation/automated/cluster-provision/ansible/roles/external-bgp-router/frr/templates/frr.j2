@@ -11,6 +11,11 @@ log syslog informational
 log file /var/log/frr/frr.log debugging
 
 
+
+interface eth0
+ pbr-policy BGPRouting
+exit
+!
 nexthop-group k8s-worker-pool
 {% for host in groups['k8s-workers'] %}
   nexthop {{ host }}
@@ -23,4 +28,9 @@ router bgp 64501
 {% for host in groups['k8s-workers'] %}
   neighbor {{ host }} remote-as 64500
 {% endfor %}
+!
+pbr-map BGPRouting seq 100
+ match dst-ip 0.0.0.0/0
+ set nexthop-group k8s-worker-pool
+exit
 !

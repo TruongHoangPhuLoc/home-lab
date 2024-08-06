@@ -1,0 +1,34 @@
+groups:
+- name: disk_io
+  rules:
+  - record: disk_io:read_bytes_rate_last5m
+    expr: rate(node_disk_read_bytes_total[5m])
+  - record: disk_io:write_bytes_rate_last5m
+    expr: rate(node_disk_written_bytes_total[5m])
+  - record: disk_io:io_now
+    expr: node_disk_io_now
+
+- name: fs_usage
+  rules:
+  - record: fs_usage:fs_avail_megabytes
+    expr: node_filesystem_avail_bytes / (1024 * 1024) 
+  - record: fs_usage:fs_available_percentage
+    expr: round((node_filesystem_avail_bytes / node_filesystem_size_bytes) * 100)
+  - record: fs_usage:fs_used_percentage
+    expr: round(100 - (node_filesystem_avail_bytes / node_filesystem_size_bytes) * 100)
+
+- name: memory_usage
+  rules:
+  - record: memory_usage:available_remaining
+    expr: (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100
+
+- name: cpu_usage
+  rules:
+  - record: cpu_usage:percore_last5m
+    expr: rate(node_cpu_seconds_total{mode!="idle"}[5m])
+  - record: cpu_usage:percentage_percore_last5m
+    expr: (avg(1 - rate(node_cpu_seconds_total{mode="idle"}[5m])) by (instance, cpu)) * 100
+  #  expr: 100 * avg(rate(node_cpu_seconds_total{mode!="idle"}[5m])) by (instance, cpu)
+  - record: cpu_usage:total_percentage_last5m
+    expr: (avg(1 - rate(node_cpu_seconds_total{mode="idle"}[5m])) by (instance)) * 100
+  #  expr: 100 * avg(rate(node_cpu_seconds_total{mode!="idle"}[5m])) by (instance)

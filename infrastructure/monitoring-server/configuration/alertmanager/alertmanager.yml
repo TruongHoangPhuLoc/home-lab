@@ -1,0 +1,18 @@
+global:
+  smtp_smarthost: ${ALERTMANAGER_SMTP_SMTP_SERVER}:${ALERTMANAGER_SMTP_SMTP_PORT}
+  smtp_from: ${ALERTMANAGER_SMTP_SMTP_FROM}'
+  smtp_auth_username: ${ALERTMANAGER_SMTP_SMTP_USERNAME}
+  smtp_auth_password: ${ALERTMANAGER_SMTP_SMTP_PASSWORD}
+route:
+  receiver: 'Mail Alert'
+  group_by: [ alertname, instance, device ]
+  repeat_interval: 30s
+  group_wait: 15s
+  group_interval: 15s
+
+receivers:
+  - name: 'Mail Alert'
+    email_configs:
+        to: ${ALERTMANAGER_SMTP_SMTP_TO}
+        headers:
+          subject: 'Prometheus Mail Alerts'

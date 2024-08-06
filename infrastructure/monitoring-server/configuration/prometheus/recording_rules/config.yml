@@ -32,3 +32,8 @@ groups:
   - record: cpu_usage:total_percentage_last5m
     expr: (avg(1 - rate(node_cpu_seconds_total{mode="idle"}[5m])) by (instance)) * 100
   #  expr: 100 * avg(rate(node_cpu_seconds_total{mode!="idle"}[5m])) by (instance)
+  # Test CD
+  - record: cpu_usage:total_percentage_last5m1
+    expr: (avg(1 - rate(node_cpu_seconds_total{mode="idle"}[5m])) by (instance)) * 100
+  #  expr: 100 * avg(rate(node_cpu_seconds_total{mode!="idle"}[5m])) by (instance)
+  

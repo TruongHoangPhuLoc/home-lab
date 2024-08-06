@@ -40,7 +40,6 @@ groups:
       summary: "High disk I/O on instance {{ $labels.instance }}"
       description: "Number of ongoing I/O operations is above 5 for more than 5 minute on instance {{ $labels.instance }}."
 
-
 - name: Memory_Alerts
   rules:
     - alert: Available_Memory_Low

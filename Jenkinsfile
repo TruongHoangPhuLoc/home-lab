@@ -11,12 +11,12 @@ pipeline {
     //         }
     //     }
     // }
-    
 
     stages {
-        stage('Test'){
+        stage('Test-Changes'){
+            when { changeset "**/monitoring-server/configuration/**"}
             steps{
-                        sh 'echo DONE'
+                        sh 'echo Changes applied to Monitoring'
             }
         }
     }

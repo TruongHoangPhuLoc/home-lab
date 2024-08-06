@@ -24,9 +24,9 @@ pipeline {
                         set -e
                         ssh ${REMOTE_USER}@${REMOTE_SERVER} "
                             if [ -d ${TARGET_DIR}  ]; then
-                                cd ${TARGET_DIR} && git pull > /dev/null
+                                cd ${TARGET_DIR} && git pull > /dev/null 2>&1
                             else
-                               git clone ${GIT_REPO_URL} > /dev/null
+                               git clone ${GIT_REPO_URL} > /dev/null 2>&1
                             fi
                         "
                         '''
@@ -46,7 +46,7 @@ pipeline {
                     script {
                         sh '''
                         ssh ${REMOTE_USER}@${REMOTE_SERVER} "
-                        curl -X POST http://localhost:9090/-/reload > /dev/null
+                        curl -X POST http://localhost:9090/-/reload > /dev/null 2>&1
                         "
                         '''
                     }
@@ -63,7 +63,7 @@ pipeline {
                         sh '''
                         ssh ${REMOTE_USER}@${REMOTE_SERVER} "
                         source .secret-env-exporting.sh
-                        cd ${TARGET_DIR}/infrastructure/monitoring-server/configuration/ && docker compose down > /dev/null && docker compose up -d > /dev/null
+                        cd ${TARGET_DIR}/infrastructure/monitoring-server/configuration/ && docker compose down  > /dev/null 2>&1 && docker compose up -d  > /dev/null 2>&1
                         "
                         '''
                     }

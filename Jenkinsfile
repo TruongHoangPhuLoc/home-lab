@@ -16,9 +16,9 @@ pipeline {
                         sh '''
                         ssh ${REMOTE_USER}@${REMOTE_SERVER} "whoami"
                         '''
-
-        }
-        }
+                    }
+                }
+            }
         }
         stage('Reload-Configuration') {
             when {

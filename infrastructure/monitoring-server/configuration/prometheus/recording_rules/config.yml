@@ -1,4 +1,5 @@
 groups:
+
 - name: disk_io
   rules:
   - record: disk_io:read_bytes_rate_last5m

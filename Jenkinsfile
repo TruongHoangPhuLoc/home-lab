@@ -8,6 +8,7 @@ pipeline {
         TARGET_DIR = '$(pwd)/home-lab/infrastructure/monitoring-server/configuration'
     }
     stages {
+        
         stage('SSH-To-Monitoring-Host') {
             steps {
                 sshagent([SSH_CREDENTIALS_ID]) {

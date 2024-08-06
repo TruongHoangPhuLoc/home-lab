@@ -24,9 +24,9 @@ pipeline {
                         set -e
                         ssh ${REMOTE_USER}@${REMOTE_SERVER} "
                             if [ -d ${TARGET_DIR}  ]; then
-                                cd ${TARGET_DIR}
+                                cd ${TARGET_DIR} && echo "Hello" > newfile
                             else
-                                echo "Not exist"
+                                echo "Not Exist" > newfile
                             fi
                         "
                         '''

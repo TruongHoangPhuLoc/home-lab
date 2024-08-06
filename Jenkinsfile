@@ -42,11 +42,15 @@ pipeline {
                 }
             }
             steps {
-                sh '''
-                ssh ${REMOTE_USER}@${REMOTE_SERVER} "
-                curl -X POST http://localhost:9090/-/reload
-                "
-                '''
+                sshagent([SSH_CREDENTIALS_ID]) {
+                    script {
+                        sh '''
+                        ssh ${REMOTE_USER}@${REMOTE_SERVER} "
+                        curl -X POST http://localhost:9090/-/reload
+                        "
+                        '''
+                    }
+                }
             }
         }
         stage('ReDeploy-Monitoring-Stack') {
@@ -54,12 +58,16 @@ pipeline {
                 changeset "**/monitoring-server/configuration/docker-compose.yml"
             }
             steps {
-                sh '''
-                ssh ${REMOTE_USER}@${REMOTE_SERVER} "
-                source .secret-env-exporting.sh
-                cd ${TARGET_DIR}/infrastructure/monitoring-server/configuration/ && docker compose down && docker compose up -d
-                "
-                '''
+                sshagent([SSH_CREDENTIALS_ID]) {
+                    script{
+                        sh '''
+                        ssh ${REMOTE_USER}@${REMOTE_SERVER} "
+                        source .secret-env-exporting.sh
+                        cd ${TARGET_DIR}/infrastructure/monitoring-server/configuration/ && docker compose down && docker compose up -d
+                        "
+                        '''
+                    }
+                }
             }
         }
     }

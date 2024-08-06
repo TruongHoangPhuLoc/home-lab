@@ -17,7 +17,6 @@ pipeline {
         stage('Test'){
             steps{
                         sh 'echo DONE'
-                
             }
         }
     }

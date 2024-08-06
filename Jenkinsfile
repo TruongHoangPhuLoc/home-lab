@@ -16,7 +16,7 @@ pipeline {
     stages {
         stage('Test'){
             steps{
-                        sh 'DONE'
+                        sh 'echo DONE'
                 
             }
         }

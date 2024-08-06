@@ -19,6 +19,7 @@ services:
       - ./prometheus/:/etc/prometheus/
     networks:
       - monitoring
+    command: --web.enable-lifecycle --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --web.console.libraries=/usr/share/prometheus/console_libraries --web.console.templates=/usr/share/prometheus/consoles
   alertmanager:
     image: prom/alertmanager:latest
     restart: unless-stopped

@@ -8,7 +8,7 @@ pipeline {
         TARGET_DIR = '$(pwd)/home-lab'
     }
     stages {
-        stage('SSH-To-Monitoring-Host') {
+        stage('SSH-To-Monitoring-Host-And-CheckOut') {
             steps {
                 sshagent([SSH_CREDENTIALS_ID]) {
                     script {
@@ -24,9 +24,9 @@ pipeline {
                         set -e
                         ssh ${REMOTE_USER}@${REMOTE_SERVER} "
                             if [ -d ${TARGET_DIR}  ]; then
-                                cd ${TARGET_DIR} && echo "Hello" > newfile
+                                cd ${TARGET_DIR} && git pull
                             else
-                                echo "Not Exist" > newfile
+                               git clone ${GIT_REPO_URL}
                             fi
                         "
                         '''
@@ -42,7 +42,11 @@ pipeline {
                 }
             }
             steps {
-                sh 'echo Rules Changed'
+                sh '''
+                ssh ${REMOTE_USER}@${REMOTE_SERVER} "
+                curl -X POST http://localhost:9090/-/reload
+                "
+                '''
             }
         }
         stage('ReDeploy-Monitoring-Stack') {
@@ -50,7 +54,12 @@ pipeline {
                 changeset "**/monitoring-server/configuration/docker-compose.yml"
             }
             steps {
-                sh 'echo Compose file changed'
+                sh '''
+                ssh ${REMOTE_USER}@${REMOTE_SERVER} "
+                source .secret-env-exporting.sh
+                cd ${TARGET_DIR}/infrastructure/monitoring-server/configuration/ && docker compose down && docker compose up -d
+                "
+                '''
             }
         }
     }

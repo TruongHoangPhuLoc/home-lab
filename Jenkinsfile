@@ -27,10 +27,9 @@ pipeline {
                                 cd ${TARGET_DIR} && git pull > /dev/null 2>&1
                             else
                                git clone ${GIT_REPO_URL} > /dev/null 2>&1
-                            fi 
-                        > /dev/null 2>&1
+                            fi
                         "
-                        '''
+                        ''' > /dev/null 2>&1
                     }
                 }
             }
@@ -48,7 +47,6 @@ pipeline {
                         sh '''
                         ssh ${REMOTE_USER}@${REMOTE_SERVER} "
                         curl -X POST http://localhost:9090/-/reload > /dev/null 2>&1
-                        > /dev/null 2>&1
                         "
                         '''
                     }
@@ -66,7 +64,6 @@ pipeline {
                         ssh ${REMOTE_USER}@${REMOTE_SERVER} "
                         source .secret-env-exporting.sh
                         cd ${TARGET_DIR}/infrastructure/monitoring-server/configuration/ && docker compose down  > /dev/null 2>&1 && docker compose up -d  > /dev/null 2>&1
-                        > /dev/null 2>&1
                         " 
                         '''
                     }

@@ -1,5 +1,4 @@
 groups:
-
 - name: Instance_Health
   rules:
     - alert: InstanceDown

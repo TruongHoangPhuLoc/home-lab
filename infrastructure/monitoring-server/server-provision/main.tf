@@ -73,4 +73,3 @@ resource "null_resource" "running-ansible" {
     command = "ansible-playbook -i inventory.yaml ansible/main.yaml"
   }
 }
-

@@ -28,7 +28,7 @@ pipeline {
                             else
                                git clone ${GIT_REPO_URL} > /dev/null 2>&1
                             fi
-                        " /dev/null 2>&1
+                        " > /dev/null 2>&1
                         '''
                     }
                 }

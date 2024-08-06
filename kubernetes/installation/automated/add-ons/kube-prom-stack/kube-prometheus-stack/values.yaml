@@ -359,23 +359,8 @@ alertmanager:
           - 'namespace'
       - target_matchers:
           - 'alertname = InfoInhibitor'
-    route:
-      receiver: 'Mail Alert'
-      # group_by: [ alertname ]
-      repeat_interval: 30s
-      group_wait: 15s
-      group_interval: 15s
-  
-    receivers:
-    - name: 'Mail Alert'
-      email_configs:
-        - smarthost: 'mail.internal.locthp.com:587'
-          auth_username: 'loctruong'
-          auth_password: "Phuloc@99."
-          from: 'loctruong@internal.locthp.com'
-          to: 'loctruong@internal.locthp.com'
-          headers:
-            subject: 'Prometheus Mail Alerts'
+    route: []
+    receivers: []
     templates:
     - '/etc/alertmanager/config/*.tmpl'
 

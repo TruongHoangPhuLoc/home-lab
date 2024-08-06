@@ -5,7 +5,7 @@ pipeline {
         REMOTE_SERVER = '172.16.1.215'
         SSH_CREDENTIALS_ID = 'monitoring-host-ssh'
         GIT_REPO_URL = 'https://github.com/TruongHoangPhuLoc/home-lab.git'
-        TARGET_DIR = '$(pwd)/home-lab/infrastructure/monitoring-server/configuration'
+        TARGET_DIR = '$(pwd)/home-lab'
     }
     stages {
         stage('SSH-To-Monitoring-Host') {
@@ -22,7 +22,13 @@ pipeline {
                             ssh-keyscan -H ${REMOTE_SERVER} >> ~/.ssh/known_hosts
                         fi
                         set -e
-                        ssh ${REMOTE_USER}@${REMOTE_SERVER} "whoami"
+                        ssh ${REMOTE_USER}@${REMOTE_SERVER} "
+                            if [ -d ${TARGET_DIR}  ]; then
+                                cd ${TARGET_DIR}
+                            else
+                                echo "Not exist"
+                            fi
+                        "
                         '''
                     }
                 }

@@ -33,6 +33,7 @@ pipeline {
                 anyOf {
                     changeset "**/monitoring-server/configuration/prometheus/alert_rules/**"
                     changeset "**/monitoring-server/configuration/prometheus/recording_rules/**"
+                    changeset "**/monitoring-server/configuration/prometheus/prometheus.yml"
                 }
             }
             steps {

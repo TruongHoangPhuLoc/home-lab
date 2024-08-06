@@ -1,4 +1,3 @@
-
 groups:
 - name: disk_io
   rules:

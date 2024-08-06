@@ -16,3 +16,4 @@ receivers:
         to: ${ALERTMANAGER_SMTP_SMTP_TO}
         headers:
           subject: 'Prometheus Mail Alerts'
+          

@@ -14,7 +14,14 @@ pipeline {
 
     stages {
         stage('Test-Changes'){
-            when { changeset "**/monitoring-server/configuration/**"}
+            when 
+            {  allOf {
+                    changeset "**/monitoring-server/configuration/**"
+                    not {
+                        changeset "**/monitoring-server/configuration/prometheus/targets/**"
+                    }
+                }
+            }
             steps{
                         sh 'echo Changes applied to Monitoring'
             }

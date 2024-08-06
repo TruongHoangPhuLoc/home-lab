@@ -14,6 +14,13 @@ pipeline {
                     script {
                         // Execute commands directly on the Docker host
                         sh '''
+                        set +e 
+                        ssh -o StrictHostKeyChecking=yes ${REMOTE_USER}@${REMOTE_SERVER} "exit"
+                        if [ $? -ne 0 ]; then
+                            mkdir -p .ssh/
+                            ssh-keyscan -H ${REMOTE_SERVER} >> ~/.ssh/known_hosts
+                        fi
+                        set -e
                         ssh ${REMOTE_USER}@${REMOTE_SERVER} "whoami"
                         '''
                     }

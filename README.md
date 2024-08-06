@@ -16,4 +16,8 @@ Achievements:
     + Handle traffic at L7 layer (Ingress controller)
     + SSL certs auto-renewal for the soon-expiring ones(Cert Manager)
     + Be able to access services from the Internet(Cloud Flare tunnel technologies)
++ Monitoring:
+    + Set a Monitoring Stack up to observe all my own servers
+    + Forged a CD flow to automate the deployment when having new changes
+    + Integrated Github with Jenkins hosted on private network
 

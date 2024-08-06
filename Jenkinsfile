@@ -21,14 +21,14 @@ pipeline {
             }
         }
         steps{
-            sh 'Rules Changed'
+            sh 'echo Rules Changed'
         }
         stage('Re-Deploy-Compose'){
             when {
                     changeset "**/monitoring-server/configuration/docker-compose.yml"
             }
             steps{
-                    sh 'Compose file changed'
+                    sh 'echo Compose file changed'
             }
         }
     }

@@ -13,17 +13,22 @@ pipeline {
     // }
 
     stages {
-        stage('Test-Changes'){
-            when 
-            {  allOf {
-                    changeset "**/monitoring-server/configuration/**"
-                    not {
-                        changeset "**/monitoring-server/configuration/prometheus/targets/**"
-                    }
-                }
+        stage('Reload-Configuration')
+        when{
+            anyOf{
+                changeset "**/monitoring-server/configuration/prometheus/alert_rules/**"
+                changeset "**/monitoring-server/configuration/prometheus/recording_rules/**"
+            }
+        }
+        steps{
+            sh 'Rules Changed'
+        }
+        stage('Re-Deploy-Compose'){
+            when {
+                    changeset "**/monitoring-server/configuration/docker-compose.yml"
             }
             steps{
-                        sh 'echo Changes applied to Monitoring'
+                    sh 'Compose file changed'
             }
         }
     }

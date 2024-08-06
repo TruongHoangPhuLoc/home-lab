@@ -22,13 +22,7 @@ pipeline {
                             ssh-keyscan -H ${REMOTE_SERVER} >> ~/.ssh/known_hosts
                         fi
                         set -e
-                        ssh ${REMOTE_USER}@${REMOTE_SERVER} "
-                            if [ -d ${TARGET_DIR}  ]; then
-                                cd ${TARGET_DIR} && git pull > /dev/null 2>&1
-                            else
-                               git clone ${GIT_REPO_URL} > /dev/null 2>&1
-                            fi
-                        " > /dev/null 2>&1
+                        ssh ${REMOTE_USER}@${REMOTE_SERVER} "if [ -d ${TARGET_DIR}  ]; then cd ${TARGET_DIR} && git pull > /dev/null 2>&1; else git clone ${GIT_REPO_URL} > /dev/null 2>&1; fi"
                         '''
                     }
                 }

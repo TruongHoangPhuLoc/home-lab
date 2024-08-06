@@ -55,10 +55,7 @@ pipeline {
                 sshagent([SSH_CREDENTIALS_ID]) {
                     script{
                         sh '''
-                        ssh ${REMOTE_USER}@${REMOTE_SERVER} "
-                        source .secret-env-exporting.sh
-                        cd ${TARGET_DIR}/infrastructure/monitoring-server/configuration/ && docker compose down  > /dev/null 2>&1 && docker compose up -d  > /dev/null 2>&1
-                        " 
+                        ssh ${REMOTE_USER}@${REMOTE_SERVER} "source .secret-env-exporting.sh && cd ${TARGET_DIR}/infrastructure/monitoring-server/configuration/ && docker compose down  > /dev/null 2>&1 && docker compose up -d  > /dev/null 2>&1" 
                         '''
                     }
                 }

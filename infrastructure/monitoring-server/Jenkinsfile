@@ -48,7 +48,10 @@ pipeline {
         }
         stage('ReDeploy-Monitoring-Stack') {
             when {
-                changeset "**/monitoring-server/configuration/docker-compose.yml"
+                anyOf{
+                    changeset "**/monitoring-server/configuration/docker-compose.yml"
+                    Is_First_Initialization == true
+                }
             }
             steps {
                 sshagent([SSH_CREDENTIALS_ID]) {

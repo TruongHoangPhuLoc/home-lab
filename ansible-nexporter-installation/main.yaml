@@ -39,11 +39,6 @@
           dest: /etc/apt/keyrings/docker.asc
           mode: '0644'
           force: yes
-      # - name: Add Docker repository
-      #   lineinfile:
-      #     path: /etc/apt/sources.list.d/docker.list
-      #     line: "deb [arch={{ ansible_architecture }} signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable"
-      #     create: yes
       - name: Add Docker Repo
         ansible.builtin.apt_repository:
           repo: "deb [signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu {{ ansible_lsb.codename }} stable"
@@ -71,8 +66,8 @@
 
       - name: Run Node-Exporter to expose metrics
         shell:
-          command: "docker compose -f <(curl -sL $NODE_EXPORTER_YML_URL) up -d"
-        become_user: "{{ ansible_user }}"
+          cmd: |
+           bash -c 'docker compose -f <(curl -sL "{{ NODE_EXPORTER_YML_URL }}") up -d'
 
 
       

@@ -87,7 +87,7 @@ pipeline {
                 sshagent([SSH_CREDENTIALS_ID]) {
                     script{
                         sh '''
-                        ssh ${REMOTE_USER}@${REMOTE_SERVER} "source .secret-env-exporting.sh && cd ${TARGET_DIR}/infrastructure/monitoring-server/configuration/ && docker compose up -d --force-recreate > /dev/null 2>&1" 
+                        ssh ${REMOTE_USER}@${REMOTE_SERVER} "source .secret-env-exporting.sh && cd ${TARGET_DIR}/infrastructure/monitoring-server/configuration/ && docker compose up -d --force-recreate" 
                         #ssh $REMOTE_USER@$REMOTE_SERVER "source .secret-env-exporting.sh && docker compose -f <(curl -sL $GITHUB_URL_COMPOSE ) up -d --force-recreate"
                         '''
                     }

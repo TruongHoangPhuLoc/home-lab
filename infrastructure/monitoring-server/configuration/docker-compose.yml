@@ -6,7 +6,6 @@ services:
     ports:
       - "3000:3000"
     volumes:
-
        - ./grafana/provisioning/:/etc/grafana/provisioning/datasources/
        - grafana_data:/var/lib/grafana
     environment:
@@ -65,6 +64,7 @@ configs:
               to: $ALERTMANAGER_SMTP_SMTP_TO
               headers:
                 subject: 'Prometheus Mail Alerts'
+
 
 
 

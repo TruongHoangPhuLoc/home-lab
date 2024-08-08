@@ -50,7 +50,7 @@ pipeline {
             when {
                 anyOf{
                     changeset "**/monitoring-server/configuration/docker-compose.yml"
-                    Is_First_Initialization == true
+                    expression{env.Is_First_Initialization}
                 }
             }
             steps {

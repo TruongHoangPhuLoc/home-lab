@@ -19,6 +19,7 @@ pipeline {
                 sshagent([SSH_CREDENTIALS_ID]) {
                     script {
                         sh '''
+                        echo Setting remote connection...
                         set +e 
                         ssh -o StrictHostKeyChecking=yes ${REMOTE_USER}@${REMOTE_SERVER} "exit"
                         if [ $? -ne 0 ]; then
@@ -26,6 +27,10 @@ pipeline {
                             ssh-keyscan -H ${REMOTE_SERVER} >> ~/.ssh/known_hosts
                         fi
                         set -e
+                        echo Remote connection settings has been completed !!!
+                        echo Deploying Monitoring Stack for the first time...
+                        ssh $REMOTE_USER@$REMOTE_SERVER "source .secret-env-exporting.sh && docker compose -f <(curl -sL $GITHUB_URL_COMPOSE ) up -d --force-recreate"
+                        echo Deploying process finished !!!
                         '''
                     }
 

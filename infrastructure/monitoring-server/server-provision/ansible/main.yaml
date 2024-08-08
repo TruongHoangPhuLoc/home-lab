@@ -68,6 +68,12 @@
           name: "{{ ansible_user }}"
           group: docker
           append: yes
+      - name: Copy Secrets to Server
+        ansible.builtin.copy:
+          src: ../../configuration/secret-env-exporting.sh
+          dest: ~/.secret-env-exporting.sh
+          mode: 0744
+        become: false
 
 
       

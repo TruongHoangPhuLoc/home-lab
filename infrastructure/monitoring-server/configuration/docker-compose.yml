@@ -5,6 +5,8 @@ services:
     container_name: grafana
     ports:
       - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     networks:
@@ -32,6 +34,9 @@ services:
       - source: alertmanager_config
         target: /config/alertmanager.yml
     command: --config.file=/config/alertmanager.yml --log.level=debug
+volumes:
+  prometheus_data:
+  grafana_data:
 networks:
   monitoring:
     driver: bridge

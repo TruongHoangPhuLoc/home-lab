@@ -6,27 +6,28 @@ pipeline {
         SSH_CREDENTIALS_ID = 'monitoring-host-ssh'
         GIT_REPO_URL = 'https://github.com/TruongHoangPhuLoc/home-lab.git'
         TARGET_DIR = '$(pwd)/home-lab'
+        GITHUB_URL_COMPOSE= 'https://raw.githubusercontent.com/TruongHoangPhuLoc/home-lab/main/infrastructure/monitoring-server/configuration/docker-compose.yml'
     }
     stages {
-        stage('SSH-To-Monitoring-Host-And-CheckOut') {
-            steps {
-                sshagent([SSH_CREDENTIALS_ID]) {
-                    script {
-                        sh '''
-                        set +e 
-                        ssh -o StrictHostKeyChecking=yes ${REMOTE_USER}@${REMOTE_SERVER} "exit"
-                        if [ $? -ne 0 ]; then
-                            mkdir -p ~/.ssh
-                            ssh-keyscan -H ${REMOTE_SERVER} >> ~/.ssh/known_hosts
-                        fi
-                        set -e
-                        ssh ${REMOTE_USER}@${REMOTE_SERVER} "if [ -d ${TARGET_DIR}  ]; then cd ${TARGET_DIR} && git pull > /dev/null 2>&1; else git clone ${GIT_REPO_URL} > /dev/null 2>&1; fi"
-                        '''
-                    }
-                    
-                }
-            }
-        }
+        // stage('SSH-To-Monitoring-Host-And-CheckOut') {
+        //     steps {
+        //         sshagent([SSH_CREDENTIALS_ID]) {
+        //             script {
+        //                 sh '''
+        //                 set +e 
+        //                 ssh -o StrictHostKeyChecking=yes ${REMOTE_USER}@${REMOTE_SERVER} "exit"
+        //                 if [ $? -ne 0 ]; then
+        //                     mkdir -p ~/.ssh
+        //                     ssh-keyscan -H ${REMOTE_SERVER} >> ~/.ssh/known_hosts
+        //                 fi
+        //                 set -e
+        //                 ssh ${REMOTE_USER}@${REMOTE_SERVER} "if [ -d ${TARGET_DIR}  ]; then cd ${TARGET_DIR} && git pull > /dev/null 2>&1; else git clone ${GIT_REPO_URL} > /dev/null 2>&1; fi"
+        //                 '''
+        //             }
+
+        //         }
+        //     }
+        // }
         stage('Reload-Configuration') {
             when {
                 anyOf {
@@ -53,7 +54,8 @@ pipeline {
                 sshagent([SSH_CREDENTIALS_ID]) {
                     script{
                         sh '''
-                        ssh ${REMOTE_USER}@${REMOTE_SERVER} "source .secret-env-exporting.sh && cd ${TARGET_DIR}/infrastructure/monitoring-server/configuration/ && docker compose down  > /dev/null 2>&1 && docker compose up -d  > /dev/null 2>&1" 
+                        #ssh ${REMOTE_USER}@${REMOTE_SERVER} "source .secret-env-exporting.sh && cd ${TARGET_DIR}/infrastructure/monitoring-server/configuration/ && docker compose down  > /dev/null 2>&1 && docker compose up -d  > /dev/null 2>&1" 
+                        ssh ${REMOTE_USER}@${REMOTE_SERVER} "source .secret-env-exporting.sh docker compose -f <(curl -sL {$GITHUB_URL_COMPOSE} ) up -d --force-recreate"
                         '''
                     }
                 }

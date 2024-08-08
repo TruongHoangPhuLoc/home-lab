@@ -56,7 +56,7 @@ pipeline {
                 anyOf{
                     changeset "**/monitoring-server/configuration/docker-compose.yml"
                     expression{
-                        env.Is_First_Initialization == true
+                        params.Is_First_Initialization
                     }
                 }
             }

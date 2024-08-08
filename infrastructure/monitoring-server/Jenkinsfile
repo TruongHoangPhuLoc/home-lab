@@ -37,6 +37,11 @@ pipeline {
             }
         }
         stage('SSH-To-Monitoring-Host-And-CheckOut') {
+            when{
+                expression{
+                    params.Is_First_Initialization == false
+                }
+            }
             steps {
                 sshagent([SSH_CREDENTIALS_ID]) {
                     script {

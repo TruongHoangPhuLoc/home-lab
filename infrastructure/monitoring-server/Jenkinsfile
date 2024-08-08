@@ -58,7 +58,7 @@ pipeline {
                 }
             }
         }
-        stage('ReDeploy_Monitoring_Stack') {
+        stage('Re-Deploy_Monitoring_Stack') {
             when {
                 allOf{
                     changeset "**/monitoring-server/configuration/docker-compose.yml"

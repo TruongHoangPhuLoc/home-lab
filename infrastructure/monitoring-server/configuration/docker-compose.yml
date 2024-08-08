@@ -6,7 +6,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - grafana_data:/var/lib/grafana
+      - ./grafana:/var/lib/grafana
     environment:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     networks:
@@ -17,7 +17,7 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - prometheus_data:/etc/prometheus/
+      - ./prometheus/:/etc/prometheus/
     networks:
       - monitoring
     #command: --web.enable-lifecycle --config.file=/etc/prometheus/prometheus.yml --storage.tsdb.path=/prometheus --web.console.libraries=/usr/share/prometheus/console_libraries --web.console.templates=/usr/share/prometheus/consoles
@@ -34,7 +34,6 @@ services:
       - source: alertmanager_config
         target: /config/alertmanager.yml
     command: --config.file=/config/alertmanager.yml --log.level=debug
-
 volumes:
   prometheus_data:
   grafana_data:
@@ -61,7 +60,5 @@ configs:
               to: $ALERTMANAGER_SMTP_SMTP_TO
               headers:
                 subject: 'Prometheus Mail Alerts'
-          
-          
 
 

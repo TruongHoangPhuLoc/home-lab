@@ -6,7 +6,6 @@ pipeline {
         SSH_CREDENTIALS_ID = 'monitoring-host-ssh'
         GIT_REPO_URL = 'https://github.com/TruongHoangPhuLoc/home-lab.git'
         TARGET_DIR = '$(pwd)/home-lab'
-        GITHUB_URL_COMPOSE= 'https://raw.githubusercontent.com/TruongHoangPhuLoc/home-lab/main/infrastructure/monitoring-server/configuration/docker-compose.yml'
     }
     stages {
         stage('Initalization') {
@@ -27,13 +26,25 @@ pipeline {
                             ssh-keyscan -H ${REMOTE_SERVER} >> ~/.ssh/known_hosts
                         fi
                         set -e
-                        echo Remote connection settings has been completed !!!
+                        echo Remote connection settings have been completed !!!
                         echo Deploying Monitoring Stack for the first time...
-                        ssh $REMOTE_USER@$REMOTE_SERVER "source .secret-env-exporting.sh && docker compose -f <(curl -sL $GITHUB_URL_COMPOSE ) up -d --force-recreate"
+                        ssh $REMOTE_USER@$REMOTE_SERVER "source .secret-env-exporting.sh && git clone ${GIT_REPO_URL} > /dev/null 2>&1 && cd ${TARGET_DIR}/infrastructure/monitoring-server/configuration/ && docker compose up -d"
                         echo Deploying process finished !!!
                         '''
                     }
 
+                }
+            }
+        }
+        stage('SSH-To-Monitoring-Host-And-CheckOut') {
+            steps {
+                sshagent([SSH_CREDENTIALS_ID]) {
+                    script {
+                        sh '''
+                        ssh ${REMOTE_USER}@${REMOTE_SERVER} "cd ${TARGET_DIR} && git pull > /dev/null 2>&1"
+                        '''
+                    }
+                    
                 }
             }
         }
@@ -71,8 +82,8 @@ pipeline {
                 sshagent([SSH_CREDENTIALS_ID]) {
                     script{
                         sh '''
-                        #ssh ${REMOTE_USER}@${REMOTE_SERVER} "source .secret-env-exporting.sh && cd ${TARGET_DIR}/infrastructure/monitoring-server/configuration/ && docker compose down  > /dev/null 2>&1 && docker compose up -d  > /dev/null 2>&1" 
-                        ssh $REMOTE_USER@$REMOTE_SERVER "source .secret-env-exporting.sh && docker compose -f <(curl -sL $GITHUB_URL_COMPOSE ) up -d --force-recreate"
+                        ssh ${REMOTE_USER}@${REMOTE_SERVER} "source .secret-env-exporting.sh && cd ${TARGET_DIR}/infrastructure/monitoring-server/configuration/ && docker compose up -d --force-recreate > /dev/null 2>&1" 
+                        #ssh $REMOTE_USER@$REMOTE_SERVER "source .secret-env-exporting.sh && docker compose -f <(curl -sL $GITHUB_URL_COMPOSE ) up -d --force-recreate"
                         '''
                     }
                 }

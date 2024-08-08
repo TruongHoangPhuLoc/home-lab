@@ -34,6 +34,7 @@ services:
       - source: alertmanager_config
         target: /config/alertmanager.yml
     command: --config.file=/config/alertmanager.yml --log.level=debug
+
 volumes:
   prometheus_data:
   grafana_data:

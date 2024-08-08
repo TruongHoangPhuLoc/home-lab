@@ -9,9 +9,10 @@ pipeline {
         GITHUB_URL_COMPOSE= 'https://raw.githubusercontent.com/TruongHoangPhuLoc/home-lab/main/infrastructure/monitoring-server/configuration/docker-compose.yml'
     }
     stages {
-        stage('Display-ENVs')
+        stage('Display-ENVs'){
         steps{
             sh 'env'
+        }
         }
         // stage('SSH-To-Monitoring-Host-And-CheckOut') {
         //     steps {

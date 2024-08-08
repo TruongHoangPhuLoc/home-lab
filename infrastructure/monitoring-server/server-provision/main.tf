@@ -27,12 +27,12 @@ proxmox_params = {
   pm_tls_insecure = var.pm_tls_insecure
   pm_timeout = 600
 }
-target_node = "geekom-dev"
+target_node = "dell-03"
 misc = {
   template = "cloudinit-ubuntu-24.04-template"
 }
 instances_configurations = {
-        "monitoring-test" = {
+        "monitoring-server" = {
         vmid = "230"
         cpu = {
         cores = 2
@@ -42,6 +42,15 @@ instances_configurations = {
         }
         networking = {
         ip = "172.16.1.215"
+        }
+        disks = {
+          scsi = {
+            scsi0 = {
+              disk = {
+                size = "50G"
+              }
+            }
+          }
         }
         }
     }

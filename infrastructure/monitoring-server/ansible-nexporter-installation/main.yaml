@@ -69,6 +69,11 @@
           group: docker
           append: yes
 
+      - name: Run Node-Exporter to expose metrics
+        shell:
+          command: "docker compose -f <(curl -sL $NODE_EXPORTER_YML_URL) up -d"
+        become_user: "{{ ansible_user }}"
+
 
       
 

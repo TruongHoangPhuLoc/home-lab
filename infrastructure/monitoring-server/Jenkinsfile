@@ -28,7 +28,7 @@ pipeline {
                         set -e
                         echo Remote connection settings have been completed !!!
                         echo Deploying Monitoring Stack for the first time...
-                        ssh $REMOTE_USER@$REMOTE_SERVER "source .secret-env-exporting.sh && git clone ${GIT_REPO_URL} > /dev/null 2>&1 && cd ${TARGET_DIR}/infrastructure/monitoring-server/configuration/ && docker compose up -d"
+                        ssh $REMOTE_USER@$REMOTE_SERVER "source .secret-env-exporting.sh && git clone ${GIT_REPO_URL}  && cd ${TARGET_DIR}/infrastructure/monitoring-server/configuration/ && docker compose up -d"
                         echo Deploying process finished !!!
                         '''
                     }
@@ -46,7 +46,7 @@ pipeline {
                 sshagent([SSH_CREDENTIALS_ID]) {
                     script {
                         sh '''
-                        ssh ${REMOTE_USER}@${REMOTE_SERVER} "cd ${TARGET_DIR} && git pull > /dev/null 2>&1"
+                        ssh ${REMOTE_USER}@${REMOTE_SERVER} "cd ${TARGET_DIR} && git pull"
                         '''
                     }
                     

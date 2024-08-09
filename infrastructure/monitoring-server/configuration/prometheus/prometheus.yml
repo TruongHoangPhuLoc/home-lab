@@ -26,8 +26,7 @@ scrape_configs:
     scheme: https
     params:
       'match[]':
-        - '{job="*"}'
-        - '{__name__=~"job:.*"}'
+        - '{__name__=~".*"}'  # Match all metrics
  
     static_configs:
       - targets: ['prometheus.internal.locthp.com']

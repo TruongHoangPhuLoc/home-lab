@@ -26,7 +26,7 @@ scrape_configs:
     scheme: https
     params:
       'match[]':
-        - '{job="prometheus"}'
+        - '{job="*"}'
         - '{__name__=~"job:.*"}'
  
     static_configs:

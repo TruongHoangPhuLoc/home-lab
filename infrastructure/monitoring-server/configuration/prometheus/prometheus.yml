@@ -18,4 +18,18 @@ scrape_configs:
       - files:
         - ./targets/*.yml
 
+  - job_name: 'federate'  
+    scrape_interval: 15s
+ 
+    honor_labels: true 
+    metrics_path: '/federate'
+    scheme: https
+    params:
+      'match[]':
+        - '{job="prometheus"}'
+        - '{__name__=~"job:.*"}'
+ 
+    static_configs:
+      - targets: ['prometheus.internal.locthp.com']
+
 

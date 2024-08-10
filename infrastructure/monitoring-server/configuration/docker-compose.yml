@@ -1,11 +1,21 @@
 version: '3.8'
 services:
+  monitoring_reverse_proxy:
+    image: locthp/monitoring_reverse_proxy:latest
+    container_name: monitoring_reverse_proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - monitoring
+    volumes:
+      - $CERT_FOLDER:/etc/nginx/ssl/
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
     restart: unless-stopped
     ports:
-      - "3000:3000"
+      - "3000"
     volumes:
        - ./grafana/provisioning/:/etc/grafana/provisioning/datasources/
        - grafana_data:/var/lib/grafana
@@ -18,7 +28,7 @@ services:
     container_name: prometheus
     restart: unless-stopped
     ports:
-      - "9090:9090"
+      - "9090"
     volumes:
       # Configs files
       - ./prometheus/:/etc/prometheus/
@@ -35,7 +45,7 @@ services:
     networks:
       - monitoring
     ports:
-      - "9093:9093"
+      - "9093"
     configs:
       - source: alertmanager_config
         target: /config/alertmanager.yml

@@ -5,9 +5,17 @@ terraform {
       version = "~> 1.3.0"
       source  = "ansible/ansible"
     }
+    dns = {
+      source  = "hashicorp/dns"
+      version = "3.4.1"
+    }
   }
 }
 
+variable "key_secret" {
+  sensitive = true
+  type = string
+}
 variable "pm_api_url" {}
 
 variable "pm_user" {}
@@ -81,4 +89,29 @@ resource "null_resource" "running-ansible" {
     provisioner "local-exec" {
     command = "ansible-playbook -i inventory.yaml ansible/main.yaml"
   }
+}
+# Update new A record for the provision server
+resource "dns_a_record_set" "prometheus_test" {
+  zone = "internal.locthp.com."
+  name = "prometheus.central"
+  addresses = [
+    module.monitoring-test-provision.output_map["monitoring-server"]
+  ]
+  ttl = 300
+}
+resource "dns_a_record_set" "grafana_test" {
+  zone = "internal.locthp.com."
+  name = "grafana.central"
+  addresses = [
+    module.monitoring-test-provision.output_map["monitoring-server"]
+  ]
+  ttl = 300
+}
+resource "dns_a_record_set" "alertmanager_test" {
+  zone = "internal.locthp.com."
+  name = "alertmanager.central"
+  addresses = [
+    module.monitoring-test-provision.output_map["monitoring-server"]
+  ]
+  ttl = 300
 }

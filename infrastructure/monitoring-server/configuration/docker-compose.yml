@@ -3,6 +3,7 @@ services:
   monitoring_reverse_proxy:
     image: locthp/monitoring_reverse_proxy:latest
     container_name: monitoring_reverse_proxy
+    restart: unless-stopped
     ports:
       - "80:80"
       - "443:443"

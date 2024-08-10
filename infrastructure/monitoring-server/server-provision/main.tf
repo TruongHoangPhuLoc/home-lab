@@ -91,25 +91,25 @@ resource "null_resource" "running-ansible" {
   }
 }
 # Update new A record for the provision server
-resource "dns_a_record_set" "prometheus_test" {
+resource "dns_a_record_set" "prometheus" {
   zone = "internal.locthp.com."
-  name = "prometheus.central"
+  name = "prometheus.central-monitoring"
   addresses = [
     module.monitoring-test-provision.output_map["monitoring-server"]
   ]
   ttl = 300
 }
-resource "dns_a_record_set" "grafana_test" {
+resource "dns_a_record_set" "grafana" {
   zone = "internal.locthp.com."
-  name = "grafana.central"
+  name = "grafana.central-monitoring"
   addresses = [
     module.monitoring-test-provision.output_map["monitoring-server"]
   ]
   ttl = 300
 }
-resource "dns_a_record_set" "alertmanager_test" {
+resource "dns_a_record_set" "alertmanager" {
   zone = "internal.locthp.com."
-  name = "alertmanager.central"
+  name = "alertmanager.central-monitoring"
   addresses = [
     module.monitoring-test-provision.output_map["monitoring-server"]
   ]

@@ -17,6 +17,9 @@ services:
     command: -config.file=/etc/loki/local-config.yaml
     # Temporarily run as root 
     user: "0:0"
+    # Open port mapping
+    ports:
+      - 3100:3100
     volumes:
       - ./loki/local-config.yaml:/etc/loki/local-config.yaml
       - loki_data:/loki

@@ -66,7 +66,8 @@
       - name: Add Remote User to Docker group
         user:
           name: "{{ ansible_user }}"
-          group: docker
+          group: "{{ ansible_user }}"
+          groups: docker
           append: yes
       - name: Copy Secrets to Server
         ansible.builtin.copy:

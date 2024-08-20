@@ -61,7 +61,8 @@
       - name: Add Remote User to Docker group
         user:
           name: "{{ ansible_user }}"
-          group: docker
+          group: "{{ ansible_user }}"
+          groups: docker
           append: yes
 
   - name: Run Node-Exporter to expose metrics

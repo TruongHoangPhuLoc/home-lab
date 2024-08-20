@@ -16,6 +16,7 @@ services:
     command: -config.file=/etc/loki/local-config.yaml
     volumes:
       - ./loki/local-config.yaml:/etc/loki/local-config.yaml
+      - loki_data:/loki
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
@@ -53,6 +54,7 @@ services:
 volumes:
   prometheus_data:
   grafana_data:
+  loki_data:
 networks:
   monitoring:
     driver: bridge

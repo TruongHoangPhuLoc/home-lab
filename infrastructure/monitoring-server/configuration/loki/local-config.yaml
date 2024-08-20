@@ -1,5 +1,6 @@
 auth_enabled: false
-
+limits_config:
+  max_global_streams_per_user: 0
 server:
   http_listen_port: 3100
   http_tls_config: &tls_server_config

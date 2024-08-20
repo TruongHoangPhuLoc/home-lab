@@ -25,7 +25,7 @@ variable "pm_password" {}
 variable "pm_debug" {}
 
 variable "pm_tls_insecure" {}
-module "monitoring-test-provision" {
+module "monitoring-server-provision" {
 source = "/Users/truonghoangphuloc/Desktop/home-lab/terraform/proxmox-provider/provision-vm"
 proxmox_params = {
   pm_api_url = var.pm_api_url
@@ -66,8 +66,8 @@ instances_configurations = {
 
 resource "null_resource" "waiting_instances_ready" {
   # waiting for newly created instances to be ready to run ansible
-  depends_on = [ module.monitoring-test-provision ]
-  for_each = module.monitoring-test-provision.output_map
+  depends_on = [ module.monitoring-server-provision ]
+  for_each = module.monitoring-server-provision.output_map
   provisioner "remote-exec" {
     connection {
       host = each.value
@@ -79,7 +79,7 @@ resource "null_resource" "waiting_instances_ready" {
 }
 resource "ansible_host" "hosts" {
   depends_on = [ null_resource.waiting_instances_ready ]
-  for_each = module.monitoring-test-provision.output_map
+  for_each = module.monitoring-server-provision.output_map
   name = each.value
   #groups = [ strcontains(each.key,"k8s-master") ? "k8s-masters":"", strcontains(each.key,"k8s-worker") ? "k8s-workers":""]
   groups = ["all"]
@@ -95,7 +95,7 @@ resource "dns_a_record_set" "prometheus" {
   zone = "internal.locthp.com."
   name = "prometheus.central-monitoring"
   addresses = [
-    module.monitoring-test-provision.output_map["monitoring-server"]
+    module.monitoring-server-provision.output_map["monitoring-server"]
   ]
   ttl = 300
 }
@@ -103,7 +103,7 @@ resource "dns_a_record_set" "grafana" {
   zone = "internal.locthp.com."
   name = "grafana.central-monitoring"
   addresses = [
-    module.monitoring-test-provision.output_map["monitoring-server"]
+    module.monitoring-server-provision.output_map["monitoring-server"]
   ]
   ttl = 300
 }
@@ -111,7 +111,16 @@ resource "dns_a_record_set" "alertmanager" {
   zone = "internal.locthp.com."
   name = "alertmanager.central-monitoring"
   addresses = [
-    module.monitoring-test-provision.output_map["monitoring-server"]
+    module.monitoring-server-provision.output_map["monitoring-server"]
+  ]
+  ttl = 300
+}
+
+resource "dns_a_record_set" "loki" {
+  zone = "internal.locthp.com."
+  name = "loki.central-monitoring"
+  addresses = [
+    module.monitoring-server-provision.output_map["monitoring-server"]
   ]
   ttl = 300
 }

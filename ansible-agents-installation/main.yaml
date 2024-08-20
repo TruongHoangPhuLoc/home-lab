@@ -67,7 +67,7 @@
   - name: Run Node-Exporter to expose metrics
     shell:
       cmd: |
-        bash -c 'docker compose -f <(curl -sL "{{ NODE_EXPORTER_YML_URL }}") up -d'
+        bash -c 'docker compose -f <(curl -sL "{{ NODE_EXPORTER_YML_URL }}") up -d --force-recreate'
 
 ### Run promtail on each agent
 
@@ -86,7 +86,7 @@
       - name: Execute compose
         shell:
           cmd: |
-            bash -c 'cd /promtail; docker compose -f <(curl -sL "{{ PROMTAIL_YML_URL }}") up -d'
+            bash -c 'cd /promtail; docker compose -f <(curl -sL "{{ PROMTAIL_YML_URL }}") up -d --force-recreate'
 
       
 

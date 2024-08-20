@@ -2,6 +2,9 @@ auth_enabled: false
 
 server:
   http_listen_port: 3100
+  http_tls_config: &tls_server_config
+    cert_file: /etc/loki/ssl/fullchain.cer
+    key_file: /etc/loki/ssl/central-monitoring.internal.locthp.com.key
 
 common:
   path_prefix: /loki

@@ -2,6 +2,7 @@ version: '3.8'
 services:
   promtail:
     image: grafana/promtail:2.9.2
+    restart: unless-stopped
     volumes:
       - /var/log:/var/log
       - /promtail/promtail.yml:/etc/promtail/config.yml

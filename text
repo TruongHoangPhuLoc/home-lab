@@ -1,0 +1,14 @@
+apt-mark unhold kubeadm && \
+apt-get update && apt-get install -y kubeadm='1.30.5-1.1' && \
+apt-mark hold kubeadm
+
+
+
+export KUBECONFIG=/etc/kubernetes/admin.conf
+kubectl drain k8s-worker-node-03.internal.locthp.com  --ignore-daemonsets --delete-emptydir-data
+apt-mark unhold kubelet kubectl && \
+apt-get update && apt-get install -y kubelet='1.30.5-1.1' kubectl='1.30.5-1.1' && \
+apt-mark hold kubelet kubectl
+systemctl daemon-reload
+systemctl restart kubelet
+kubectl uncordon k8s-worker-node-03.internal.locthp.com 

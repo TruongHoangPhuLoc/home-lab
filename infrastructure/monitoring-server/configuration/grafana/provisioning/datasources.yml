@@ -6,6 +6,10 @@ datasources:
     access: proxy
     url: http://prometheus:9090
     isDefault: true
+    jsonData:
+      httpMethod: POST
+      queryTimeout: 60s   # Timeout for queries
+      minInterval: 60s
 
   - name: Loki
     type: loki

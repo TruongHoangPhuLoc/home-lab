@@ -19,8 +19,8 @@ scrape_configs:
         - ./targets/*.yml
 
   - job_name: 'federate'  
-    scrape_interval: 30s
-    scrape_timeout: 30s
+    scrape_interval: 15s
+    #scrape_timeout: 30s
  
     honor_labels: true 
     metrics_path: '/federate'

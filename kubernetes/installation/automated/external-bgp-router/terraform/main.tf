@@ -39,7 +39,7 @@ misc = {
       template = "cloudinit-ubuntu-24.04-template"
 }
 target_node = "geekom-dev"
-instances_configruations = {
+instances_configurations= {
   external-bgp-router-cloned = {
     vmid = "216"
     cpu = {

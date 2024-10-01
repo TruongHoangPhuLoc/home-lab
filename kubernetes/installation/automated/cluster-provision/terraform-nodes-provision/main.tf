@@ -41,10 +41,10 @@ proxmox_params = {
   pm_password = var.pm_password
   pm_debug = var.pm_debug
   pm_tls_insecure = var.pm_tls_insecure
-  pm_timeout = 600
+  pm_timeout = 1200
 }
 target_node = "geekom-dev"
-ininstances_configurations = {
+instances_configurations = {
   terraform-haproxy-01 = {
     vmid = "220"
     cpu = {

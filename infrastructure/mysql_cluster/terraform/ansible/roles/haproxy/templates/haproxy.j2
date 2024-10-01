@@ -1,0 +1,27 @@
+global
+    maxconn 4000           # Maximum concurrent connections (adjust as needed)
+    user haproxy          # User to run HAProxy process
+    group haproxy          # Group to run HAProxy process
+    stats socket /var/run/haproxy.sock mode 666 level admin
+
+defaults
+    mode tcp             # Set operating mode to TCP
+    #option tcpka
+
+frontend gr-prod-rw
+    bind 0.0.0.0:3306     
+    mode tcp
+    option contstats
+    option dontlognull
+    option clitcpka
+    default_backend gr-prod-rw
+
+
+
+backend gr-prod-rw
+    mode tcp
+    balance roundrobin
+    default-server inter 5s downinter 5s rise 2 fall 2 weight 100
+{% for host in groups['db-hosts'] %}
+    server db-{{ loop.index }} {{ host }}:3306 check {{ '\n' }}
+{% endfor %}

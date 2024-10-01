@@ -2983,7 +2983,7 @@ chunksCache:
   # -- Port of the chunks-cache service
   port: 11211
   # -- Amount of memory allocated to chunks-cache for object storage (in MB).
-  allocatedMemory: 1024
+  allocatedMemory: 
   # -- Maximum item memory for chunks-cache (in MB).
   maxItemMemory: 5
   # -- Maximum number of connections allowed

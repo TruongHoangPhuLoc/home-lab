@@ -1,0 +1,97 @@
+# Partition reserved path for mysql, run on each mysql node
+pvcreate /dev/sdb
+vgcreate vg_mysql /dev/sdb
+lvcreate -l 100%FREE -n lv_mysql vg_mysql
+mkfs.ext4 /dev/vg_mysql/lv_mysql
+mkdir /mnt/data
+cat <<EOF >> /etc/fstab
+#Dedicated LVM to serve Mysql
+/dev/vg_mysql/lv_mysql /mnt/data ext4 defaults 0 2
+EOF
+systemctl daemon-reload
+mount -a
+
+
+# Install required packages to deploy Percona Server for MySQL 8.0
+apt update && \
+apt install -y wget gnupg2 lsb-release curl && \
+wget https://repo.percona.com/apt/percona-release_latest.generic_all.deb && \
+dpkg -i percona-release_latest.generic_all.deb && \
+apt update && \
+percona-release setup pxc80 && \
+apt install -y percona-xtradb-cluster
+
+# Migrate old data
+mkdir /mnt/data/mysql
+chown mysql:mysql /mnt/data/mysql
+chmod 750 /mnt/data/mysql
+rsync -avzh /var/lib/mysql/ /mnt/data/mysql
+
+# Configure mysql to use newly mounted path and necessary parameters
+
+
+
+
+Y2aFewbm7PSUCpnNIb2AnTrYJNfttx1B
+
+mysql>  
++----------------------------------------------------------+
+| Grants for semaphore@%                                   |
++----------------------------------------------------------+
+| GRANT USAGE ON *.* TO `semaphore`@`%`                    |
+| GRANT ALL PRIVILEGES ON `semaphore`.* TO `semaphore`@`%` |
++----------------------------------------------------------+
+2 rows in set (0.00 sec)
+
+mysql> 
+
+# Monitoring
+
+# Set up agents
+
+docker pull \
+percona/pmm-client:2
+
+docker create \
+--volume /srv \
+--name pmm-client-data \
+percona/pmm-client:2 /bin/true
+
+PMM_SERVER=mysql-monitoring.internal.locthp.com:443
+docker run \
+--restart unless-stopped  \
+--user $(id -u):$(id -g) \
+--name pmm-client \
+-e PMM_AGENT_SERVER_ADDRESS=${PMM_SERVER} \
+-e PMM_AGENT_SERVER_USERNAME=admin \
+-e PMM_AGENT_SERVER_PASSWORD="Phuloc@99." \
+-e PMM_AGENT_SERVER_INSECURE_TLS=1 \
+-e PMM_AGENT_SETUP=1 \
+-e PMM_AGENT_CONFIG_FILE=config/pmm-agent.yaml \
+--volumes-from pmm-client-data \
+-v /mnt/data/mysql:/mnt/data/mysql \
+-d \
+percona/pmm-client:2
+# --restart unless-stopped \
+CREATE USER 'pmm'@'%' IDENTIFIED BY 'pmm' WITH MAX_USER_CONNECTIONS 10;
+GRANT SELECT, PROCESS, REPLICATION CLIENT, RELOAD, BACKUP_ADMIN ON *.* TO 'pmm'@'%';
+
+pmm-admin add mysql --query-source=slowlog --size-slow-logs=1GiB --username=pmm --password=pmm MYSQL_NODE_03 172.16.1.105:3306
+
+pvcreate /dev/sdc
+vgcreate vg_backup /dev/sdc
+lvcreate -l 100%FREE -n lv_backup vg_backup
+mkfs.ext4 /dev/vg_backup/lv_backup
+mkdir /mnt/backup
+cat <<EOF >> /etc/fstab
+#Dedicated LVM to serve Backup
+/dev/vg_backup/lv_backup /mnt/backup ext4 defaults 0 2
+EOF
+systemctl daemon-reload
+mount -a
+
+
+
+#Monitor HAPROXY
+
+pmm-admin config --server-insecure-tls --server-url=https://admin:Phuloc@99.@mysql-monitoring.internal.locthp.com:443

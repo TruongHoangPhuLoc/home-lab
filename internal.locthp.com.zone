@@ -1,0 +1,60 @@
+$TTL 86400      ; default TTL
+@   IN  SOA ns.internal.locthp.com. admin.internal.locthp.com. (
+          2024092699 ; Serial
+          7200       ; Refresh
+          1800       ; Retry
+          1209600    ; Expire
+          86400      ; Minimum TTL
+)
+
+$ORIGIN internal.locthp.com.
+$TTL 604800     ; 1 week
+
+; Name servers for this domain
+@   IN  NS      dns-bind-server-master.internal.locthp.com.
+@   IN  NS      dns-bind-server-slave.internal.locthp.com.
+
+; MX Record, Mail record 
+@   IN  MX  10 mail.internal.locthp.com.
+
+; Add A records for nameservers
+dns-bind-server-master IN A 172.16.1.2
+dns-bind-server-slave  IN A 172.16.1.3
+ansible-semaphore       IN A 172.16.1.245
+jenkins                 IN A 172.16.1.245
+k8s-api-server          IN A 172.16.1.200
+k8s-master-node-01      IN A 172.16.1.201
+k8s-master-node-02      IN A 172.16.1.202
+k8s-master-node-03      IN A 172.16.1.203
+k8s-worker-node-01      IN A 172.16.1.204
+k8s-worker-node-02      IN A 172.16.1.205
+k8s-worker-node-03      IN A 172.16.1.206
+mail                    IN A 172.16.1.8
+
+
+
+$TTL 300        ; 5 minutes
+longhorn                IN A 172.16.1.199
+
+$TTL 604800     ; 1 week
+mail                    IN A 172.16.1.8
+
+$TTL 300        ; 5 minutes
+mysql                   IN A 172.16.1.100
+mysql-monitoring        IN A 172.16.1.199
+
+$TTL 604800     ; 1 week
+postfixadmin            IN A 172.16.1.8
+
+$TTL 300        ; 5 minutes
+prometheus              IN A 172.16.1.199
+socket                  IN A 172.16.1.199
+
+
+
+$ORIGIN central-monitoring.internal.locthp.com.
+$TTL 300        ; 5 minutes
+alertmanager            IN A 172.16.1.215
+grafana                 IN A 172.16.1.215
+loki                    IN A 172.16.1.215
+prometheus              IN A 172.16.1.215

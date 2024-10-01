@@ -6,7 +6,7 @@ helm repo add longhorn https://charts.longhorn.io
 helm repo update
 helm install longhorn longhorn/longhorn --namespace longhorn-system \
   --set defaultSettings.defaultDataPath="/longhorn-data/" \
-  --version v1.6.1
+  --version v1.7.1
 
 #Create ingress
 USER=<USERNAME_HERE>; PASSWORD=<PASSWORD_HERE>; echo "${USER}:$(openssl passwd -stdin -apr1 <<< ${PASSWORD})" >> auth

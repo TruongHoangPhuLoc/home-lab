@@ -377,7 +377,9 @@ alertmanager:
     ingressClassName: nginx
 
     annotations:
-     cert-manager.io/cluster-issuer: letsencrypt-prod
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      external-dns.alpha.kubernetes.io/target: "172.16.1.199"
+      external-dns.alpha.kubernetes.io/hostname: "alertmanager.internal.locthp.com"
   
 
     labels: {}
@@ -935,7 +937,7 @@ grafana:
   ##
   defaultDashboardsTimezone: utc
 
-  adminPassword: "password"
+  adminPassword: "Phuloc@99."
 
   rbac:
     ## If true, Grafana PSPs will be created
@@ -956,6 +958,8 @@ grafana:
     ##
     annotations: 
       cert-manager.io/cluster-issuer: "letsencrypt-prod"
+      external-dns.alpha.kubernetes.io/target: "172.16.1.199"
+      external-dns.alpha.kubernetes.io/hostname: "grafana.internal.locthp.com"
 
     ## Labels to be added to the Ingress
     ##
@@ -2774,6 +2778,8 @@ prometheus:
 
     annotations:
       cert-manager.io/cluster-issuer: "letsencrypt-prod"
+      external-dns.alpha.kubernetes.io/target: "172.16.1.199"
+      external-dns.alpha.kubernetes.io/hostname: "prometheus.internal.locthp.com"
     labels: {}
 
     ## Redirect ingress to an additional defined port on the service
@@ -3106,7 +3112,7 @@ prometheus:
     ## prometheus resource to be created with selectors based on values in the helm deployment,
     ## which will also match the servicemonitors created
     ##
-    serviceMonitorSelectorNilUsesHelmValues: true
+    serviceMonitorSelectorNilUsesHelmValues: false
 
     ## ServiceMonitors to be selected for target discovery.
     ## If {}, select all ServiceMonitors
@@ -3129,7 +3135,7 @@ prometheus:
     ## prometheus resource to be created with selectors based on values in the helm deployment,
     ## which will also match the podmonitors created
     ##
-    podMonitorSelectorNilUsesHelmValues: true
+    podMonitorSelectorNilUsesHelmValues: false
 
     ## PodMonitors to be selected for target discovery.
     ## If {}, select all PodMonitors

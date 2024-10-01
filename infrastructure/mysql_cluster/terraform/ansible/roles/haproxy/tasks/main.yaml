@@ -1,0 +1,40 @@
+- name: Install neccessary packages
+  ansible.builtin.apt:
+    force_apt_get: true
+    name:
+    - haproxy
+    - keepalived
+- name: Check if the default configuration exists
+  stat: 
+    path: /etc/haproxy/haproxy.cfg  
+  register: default_haproxy_config
+- name: Backup default configuration file
+  shell:
+    cmd: mv /etc/haproxy/haproxy.cfg /etc/haproxy/haproxy.cfg.bak
+  when: default_haproxy_config.stat.exists
+  
+- name: Load HAProxy configuration file to Servers 
+  template:
+    src: templates/haproxy.j2
+    dest: /etc/haproxy/haproxy.cfg
+
+- name: Load Keepalived configuration file to Servers
+  template:
+    src: templates/keepalived.j2
+    dest: /etc/keepalived/keepalived.conf
+
+
+- name: Restart Keepalived for the new configuration to take effect
+  ansible.builtin.systemd_service:
+    name: keepalived
+    state: restarted
+    enabled: true
+
+- name: Restart HAproxy for the new configuration to take effect
+  ansible.builtin.systemd_service:
+    name: haproxy
+    state: restarted
+    enabled: true
+
+
+

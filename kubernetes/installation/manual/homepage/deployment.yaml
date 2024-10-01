@@ -173,6 +173,8 @@ metadata:
     gethomepage.dev/name: Homepage
     nginx.org/redirect-to-https: 'True'
     cert-manager.io/cluster-issuer: letsencrypt-prod
+    external-dns.alpha.kubernetes.io/target: "172.16.1.199"
+    external-dns.alpha.kubernetes.io/hostname: "homepage.internal.locthp.com"
 spec:
   ingressClassName: nginx
   tls:

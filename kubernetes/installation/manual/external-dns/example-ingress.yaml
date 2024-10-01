@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: example-ingress
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: "testdns.internal.locthp.com"
+    external-dns.alpha.kubernetes.io/target: "172.16.1.199"
+spec:
+  rules:
+  - host: testdns.internal.locthp.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: example-service
+            port:
+              number: 80

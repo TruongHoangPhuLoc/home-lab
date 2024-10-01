@@ -106,7 +106,6 @@ csi:
   snapshotterReplicaCount: ~
 
 defaultSettings:
-  defaultDataPath: "/longhorn-data/"
   backupTarget: ~
   backupTargetCredentialSecret: ~
   allowRecurringJobWhileVolumeDetached: ~

@@ -283,6 +283,3 @@ resource "ansible_group" "group-external-bgp-router" {
     address_pool = var.address_pool
   }
 }
-
-
-

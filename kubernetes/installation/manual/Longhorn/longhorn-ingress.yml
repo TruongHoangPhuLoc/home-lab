@@ -16,6 +16,9 @@ metadata:
     # custom max body size for file uploading like backing image uploading
     nginx.org/client-max-body-size: 10000m
     cert-manager.io/cluster-issuer: letsencrypt-prod
+    external-dns.alpha.kubernetes.io/target: "172.16.1.199"
+    external-dns.alpha.kubernetes.io/hostname: "longhorn.internal.locthp.com"
+
 spec:
   ingressClassName: nginx
   tls:

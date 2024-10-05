@@ -25,9 +25,9 @@ scrape_configs:
     honor_labels: true 
     metrics_path: '/federate'
     scheme: https
-    params:
-      'match[]':
-          - '{job="node-exporter"}'
+    # params:
+    #   'match[]':
+    #       - '{job="node-exporter"}'
     static_configs:
       - targets: ['prometheus.prod-cluster.internal.locthp.com']
 

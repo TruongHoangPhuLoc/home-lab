@@ -28,6 +28,9 @@ scrape_configs:
     # params:
     #   'match[]':
     #       - '{job="node-exporter"}'
+    params:
+      'match[]':
+        - '{__name__=~".+"}'
     static_configs:
       - targets: ['prometheus.prod-cluster.internal.locthp.com']
 

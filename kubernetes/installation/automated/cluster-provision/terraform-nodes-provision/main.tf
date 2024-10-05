@@ -42,6 +42,7 @@ proxmox_params = {
   pm_debug = var.pm_debug
   pm_tls_insecure = var.pm_tls_insecure
   pm_timeout = 1200
+  pm_parallel = 1
 }
 target_node = "geekom-dev"
 instances_configurations = {
@@ -159,7 +160,7 @@ instances_configurations = {
         cores = 2
     }
     memory = {
-        amount = 4096
+        amount = 2048
     }
     networking = {
       ip = "172.16.1.150"
@@ -171,7 +172,7 @@ instances_configurations = {
         cores = 2
     }
     memory = {
-        amount = 4096
+        amount = 2048
     }
     networking = {
       ip = "172.16.1.151"
@@ -183,7 +184,7 @@ instances_configurations = {
         cores = 2
     }
     memory = {
-        amount = 4096
+        amount = 2048
     }
     networking = {
       ip = "172.16.1.152"
@@ -195,7 +196,7 @@ instances_configurations = {
         cores = 2
     }
     memory = {
-        amount = 4096
+        amount = 2048
     }
     networking = {
       ip = "172.16.1.153"
@@ -207,7 +208,7 @@ instances_configurations = {
         cores = 2
     }
     memory = {
-        amount = 4096
+        amount = 2048
     }
     networking = {
       ip = "172.16.1.154"
@@ -219,7 +220,7 @@ instances_configurations = {
         cores = 2
     }
     memory = {
-        amount = 4096
+        amount = 2048
     }
     networking = {
       ip = "172.16.1.155"
@@ -251,7 +252,7 @@ resource "null_resource" "waiting_instances_ready" {
     connection {
       host = each.value
       user = "locthp"
-      private_key = file("/Users/truonghoangphuloc/.ssh/id_ed25519")
+      private_key = file("~/.ssh/id_ed25519")
     }
     inline = ["while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 1; done"]
   }

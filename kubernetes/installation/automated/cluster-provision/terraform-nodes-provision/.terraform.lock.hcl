@@ -6,6 +6,7 @@ provider "registry.terraform.io/ansible/ansible" {
   constraints = "~> 1.3.0"
   hashes = [
     "h1:9tOYF6zF3ehseoukP2IgFAAOMCInAzeZ5y67xfMfx9U=",
+    "h1:Ki8m3lAW3l6f6tPktHiyecEzOydKACJv/vMriuLDWhE=",
     "h1:X2gqMF6zc+J5VxAkJGwxOO6XXNWpX+8m6MRVETzKr2g=",
     "zh:0307c80c6a890b629e866318688ac6c73acd99dfd61c371e9036feb001baff45",
     "zh:28bddf36dce285d79391b7bbceae08e33533da4412f9c9434eb769a1e75c3992",
@@ -28,6 +29,7 @@ provider "registry.terraform.io/ansible/ansible" {
 provider "registry.terraform.io/hashicorp/null" {
   version = "3.2.3"
   hashes = [
+    "h1:+AnORRgFbRO6qqcfaQyeX80W0eX3VmjadjnUFUJTiXo=",
     "h1:I0Um8UkrMUb81Fxq/dxbr3HLP2cecTH2WMJiwKSrwQY=",
     "zh:22d062e5278d872fe7aed834f5577ba0a5afe34a3bdac2b81f828d8d3e6706d2",
     "zh:23dead00493ad863729495dc212fd6c29b8293e707b055ce5ba21ee453ce552d",
@@ -49,6 +51,7 @@ provider "registry.terraform.io/telmate/proxmox" {
   constraints = "3.0.1-rc4"
   hashes = [
     "h1:tcfqcTB5TDQKSGrWksACZdFIX6ig72i++OYaC8EncOU=",
+    "h1:wTzPTXWFxydIF6yUIkBnGQRQs0A1eWJadqyQ7EJHeAU=",
     "zh:1070aff02aebeadf130368b0082e76d976f61464b3bb29c1c5a7866bb14c7380",
     "zh:3cd96c232a12cf3bbb0e874508e5ff14116ef347d60db20db17ad87bb161ee22",
     "zh:4f75954f3e68159ed969e3eac27485166103058eff3f99186d805816c6f8eb66",

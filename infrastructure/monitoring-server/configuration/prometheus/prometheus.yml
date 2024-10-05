@@ -8,6 +8,7 @@ global:
 rule_files:
   - ./alert_rules/config.yml
   - ./recording_rules/config.yml
+
 scrape_configs:
   - job_name: 'local-prometheus'
     static_configs:

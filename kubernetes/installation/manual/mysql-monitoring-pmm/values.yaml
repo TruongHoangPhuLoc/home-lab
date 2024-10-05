@@ -70,7 +70,8 @@ secret:
   ##
   ## To get password execute `kubectl get secret pmm-secret -o jsonpath='{.data.PMM_ADMIN_PASSWORD}' | base64 --decode`
   ##
-  pmm_password: "Phuloc@99."
+  # Change
+  pmm_password: ""
   ##
   # GF_AUTH_GENERIC_OAUTH_CLIENT_ID optional client ID to integrate Grafana with internal iDP, requires other env defined as well under pmmEnv
   # GF_AUTH_GENERIC_OAUTH_CLIENT_ID:

@@ -936,8 +936,10 @@ grafana:
   ## Other options are: browser or a specific timezone, i.e. Europe/Luxembourg
   ##
   defaultDashboardsTimezone: utc
-
-  adminPassword: "Phuloc@99."
+  
+  
+  # Change
+  adminPassword: ""
 
   rbac:
     ## If true, Grafana PSPs will be created

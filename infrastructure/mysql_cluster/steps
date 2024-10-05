@@ -64,7 +64,8 @@ docker run \
 --name pmm-client \
 -e PMM_AGENT_SERVER_ADDRESS=${PMM_SERVER} \
 -e PMM_AGENT_SERVER_USERNAME=admin \
--e PMM_AGENT_SERVER_PASSWORD="Phuloc@99." \
+# Change password
+-e PMM_AGENT_SERVER_PASSWORD="CHANGE" \
 -e PMM_AGENT_SERVER_INSECURE_TLS=1 \
 -e PMM_AGENT_SETUP=1 \
 -e PMM_AGENT_CONFIG_FILE=config/pmm-agent.yaml \
@@ -109,7 +110,8 @@ docker run \
 --name pmm-client \
 -e PMM_AGENT_SERVER_ADDRESS=${PMM_SERVER} \
 -e PMM_AGENT_SERVER_USERNAME=admin \
--e PMM_AGENT_SERVER_PASSWORD="Phuloc@99." \
+# Change password
+-e PMM_AGENT_SERVER_PASSWORD="CHANGE" \
 -e PMM_AGENT_SERVER_INSECURE_TLS=1 \
 -e PMM_AGENT_SETUP=1 \
 -e PMM_AGENT_CONFIG_FILE=config/pmm-agent.yaml \

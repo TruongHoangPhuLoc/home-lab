@@ -430,7 +430,7 @@ ingress:
   ingressClassName: ~
 
   # -- Hostname of the Layer 7 load balancer.
-  host: longhorn.internal.locthp.com
+  host: longhorn.prod-cluster.internal.locthp.com
 
   # -- Setting that allows you to enable TLS on ingress records.
   tls: true
@@ -460,7 +460,7 @@ ingress:
   #  kubernetes.io/tls-acme: true
     cert-manager.io/cluster-issuer: letsencrypt-prod
     external-dns.alpha.kubernetes.io/target: "172.16.1.199"
-    external-dns.alpha.kubernetes.io/hostname: "longhorn.internal.locthp.com"
+    external-dns.alpha.kubernetes.io/hostname: "longhorn.prod-cluster.internal.locthp.com"
   # -- Secret that contains a TLS private key and certificate. Use secrets if you want to use your own certificates to secure ingresses.
   secrets:
   ## If you're providing your own certificates, please use this to add the certificates as secrets

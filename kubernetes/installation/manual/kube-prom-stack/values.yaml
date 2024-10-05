@@ -982,7 +982,10 @@ grafana:
   ##
   defaultDashboardsEditable: true
 
-  adminPassword: "Phuloc@99."
+
+
+  # Change
+  adminPassword: ""
 
   rbac:
     ## If true, Grafana PSPs will be created

@@ -4,5 +4,5 @@ rfc2136:
   port: 53
   zone: "internal.locthp.com"
   tsigKeyname: "tsig-key"
-  tsigSecret: "b8+Sap9JTHHY9ealKIukaHUGx2gl0V0pEgzk1a7Shpg="
+  tsigSecret: ""
   tsigSecretAlg: "hmac-sha256"

@@ -1,11 +1,12 @@
-kubectl apply -n longhorn-system -f https://raw.githubusercontent.com/longhorn/longhorn/v1.5.3/deploy/prerequisite/longhorn-iscsi-installation.yaml
+kubectl create ns longhorn-system
+kubectl apply -n longhorn-system -f https://raw.githubusercontent.com/longhorn/longhorn/v1.7.1/deploy/prerequisite/longhorn-iscsi-installation.yaml
 
-kubectl apply -n longhorn-system -f https://raw.githubusercontent.com/longhorn/longhorn/v1.5.3/deploy/prerequisite/longhorn-nfs-installation.yaml
+kubectl apply -n longhorn-system -f https://raw.githubusercontent.com/longhorn/longhorn/v1.7.1/deploy/prerequisite/longhorn-nfs-installation.yaml
 
 helm repo add longhorn https://charts.longhorn.io
 helm repo update
-helm install longhorn longhorn/longhorn --namespace longhorn-system \
-  --set defaultSettings.defaultDataPath="/longhorn-data/" \
+helm upgrade --install longhorn longhorn/longhorn --namespace longhorn-system \
+  -f values.yaml \
   --version v1.7.1
 
 #Create ingress

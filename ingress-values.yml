@@ -124,7 +124,7 @@ controller:
     # -- If true, Ingresses without `ingressClassName` get assigned to this IngressClass on creation.
     # Ingress creation gets rejected if there are multiple default IngressClasses.
     # Ref: https://kubernetes.io/docs/concepts/services-networking/ingress/#default-ingress-class
-    default: false
+    default: true
     # -- Annotations to be added to the IngressClass resource.
     annotations: {}
     # -- Controller of the IngressClass. An Ingress Controller looks for IngressClasses it should reconcile by this value.
@@ -537,7 +537,7 @@ controller:
       # -- Node port allocated for the external HTTP listener. If left empty, the service controller allocates one from the configured node port range.
       http: "30080"
       # -- Node port allocated for the external HTTPS listener. If left empty, the service controller allocates one from the configured node port range.
-      https: "30083"
+      https: "30443"
       # -- Node port mapping for external TCP listeners. If left empty, the service controller allocates them from the configured node port range.
       # Example:
       # tcp:

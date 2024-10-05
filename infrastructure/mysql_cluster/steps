@@ -94,4 +94,32 @@ mount -a
 
 #Monitor HAPROXY
 
-pmm-admin config --server-insecure-tls --server-url=https://admin:Phuloc@99.@mysql-monitoring.internal.locthp.com:443
+docker pull \
+percona/pmm-client:2
+
+docker create \
+--volume /srv \
+--name pmm-client-data \
+percona/pmm-client:2 /bin/true
+
+PMM_SERVER=mysql-monitoring.internal.locthp.com:443
+docker run \
+--restart unless-stopped  \
+--user $(id -u):$(id -g) \
+--name pmm-client \
+-e PMM_AGENT_SERVER_ADDRESS=${PMM_SERVER} \
+-e PMM_AGENT_SERVER_USERNAME=admin \
+-e PMM_AGENT_SERVER_PASSWORD="Phuloc@99." \
+-e PMM_AGENT_SERVER_INSECURE_TLS=1 \
+-e PMM_AGENT_SETUP=1 \
+-e PMM_AGENT_CONFIG_FILE=config/pmm-agent.yaml \
+--volumes-from pmm-client-data \
+--network host \
+-d \
+percona/pmm-client:2
+
+pmm-admin config --server-insecure-tls --server-url=https://admin:admin@X.X.X.X:443
+
+
+2024-09-28 22:15:23.638	
+172.16.1.207 - admin [28/Sep/2024:15:15:23 +0000] "POST /victoriametrics/api/v1/write HTTP/1.1" 204 0 "-" "vmagent" 8557 0.001 [pmm-mysql-monitoring-monitoring-service-80] [] 10.244.3.150:80 0 0.001 204 0d35d7267a47ab9604e7508a087b53ce

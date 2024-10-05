@@ -38,5 +38,9 @@ networks:
     driver: bridge
 
 
-    external-dns.alpha.kubernetes.io/target: "172.16.1.199"
-    external-dns.alpha.kubernetes.io/hostname: "longhorn.internal.locthp.com"
+external-dns.alpha.kubernetes.io/target: "172.16.1.199"
+external-dns.alpha.kubernetes.io/hostname: "longhorn.internal.locthp.com"
+
+helm upgrade --install ingress-nginx ingress-nginx \
+  --repo https://kubernetes.github.io/ingress-nginx \
+  --namespace ingress-nginx --create-namespace -f ingress-values.yml

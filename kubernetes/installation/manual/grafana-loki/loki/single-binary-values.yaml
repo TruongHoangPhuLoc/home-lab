@@ -49,7 +49,7 @@ chunksCache:
 
 # Enable minio for storage
 minio:
-  enabled: true
+  enabled: false
 
 # Zero out replica counts of other deployment modes
 backend:

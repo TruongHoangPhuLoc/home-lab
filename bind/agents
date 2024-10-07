@@ -1,0 +1,1 @@
+docker run --name bind-exporter -d --restart unless-stopped --network host prometheuscommunity/bind-exporter:v0.3.0

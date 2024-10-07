@@ -59,3 +59,5 @@ scrape_configs:
     - targets:
        - 172.16.1.101:8405
        - 172.16.1.102:8405
+       - k8s-prod-cluster-haproxy-01.internal.locthp.com:8405
+       - k8s-prod-cluster-haproxy-02.internal.locthp.com:8405

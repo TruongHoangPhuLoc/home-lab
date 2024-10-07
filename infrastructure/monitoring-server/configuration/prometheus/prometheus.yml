@@ -35,4 +35,9 @@ scrape_configs:
     static_configs:
       - targets: ['prometheus.prod-cluster.internal.locthp.com']
 
+  - job_name: 'bind-exporter'
+    static_configs:
+     - targets:
+        - 172.16.1.2:9119
+        - 172.16.1.3:9119
 

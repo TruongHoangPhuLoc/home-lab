@@ -492,11 +492,12 @@ serviceAccount:
 metrics:
   serviceMonitor:
     # -- Setting that allows the creation of a Prometheus ServiceMonitor resource for Longhorn Manager components.
-    enabled: false
+    enabled: true
     # -- Additional labels for the Prometheus ServiceMonitor resource.
     additionalLabels: {}
     # -- Annotations for the Prometheus ServiceMonitor resource.
-    annotations: {}
+    annotations:
+      release: "kube-prometheus-stack"
     # -- Interval at which Prometheus scrapes the metrics from the target.
     interval: ""
     # -- Timeout after which Prometheus considers the scrape to be failed.

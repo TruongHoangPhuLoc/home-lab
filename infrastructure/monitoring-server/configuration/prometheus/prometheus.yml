@@ -48,11 +48,11 @@ scrape_configs:
        - 172.16.1.6:9617
 
 
-  - job_name: 'nginx-instance'
-    static_configs:
-    - targets:
-       - nginx-master-reverse-proxy.internal.locthp.com:80
-    metrics_path: '/status/format/prometheus'
+  # - job_name: 'nginx-instance'
+  #   static_configs:
+  #   - targets:
+  #      - nginx-master-reverse-proxy.internal.locthp.com:80
+  #   metrics_path: '/status/format/prometheus'
 
 
   - job_name: 'haproxy-exporter'
@@ -62,7 +62,7 @@ scrape_configs:
        - 172.16.1.102:8405
        - k8s-prod-cluster-haproxy-01.internal.locthp.com:8405
        - k8s-prod-cluster-haproxy-02.internal.locthp.com:8405
-       - automation-server.internal.locthp.com:8405
+       - haproxy-master.internal.locthp.com:8405
 
 
 #  - job_name: 'envoy'

@@ -90,37 +90,37 @@ resource "null_resource" "running-ansible" {
     command = "ansible-playbook -i inventory.yaml ansible/main.yaml"
   }
 }
-# Update new A record for the provision server
-resource "dns_a_record_set" "prometheus" {
-  zone = "internal.locthp.com."
-  name = "prometheus.central-monitoring"
-  addresses = [
-    module.monitoring-server-provision.output_map["monitoring-server"]
-  ]
-  ttl = 300
-}
-resource "dns_a_record_set" "grafana" {
-  zone = "internal.locthp.com."
-  name = "grafana.central-monitoring"
-  addresses = [
-    module.monitoring-server-provision.output_map["monitoring-server"]
-  ]
-  ttl = 300
-}
-resource "dns_a_record_set" "alertmanager" {
-  zone = "internal.locthp.com."
-  name = "alertmanager.central-monitoring"
-  addresses = [
-    module.monitoring-server-provision.output_map["monitoring-server"]
-  ]
-  ttl = 300
-}
+# # Update new A record for the provision server
+# resource "dns_a_record_set" "prometheus" {
+#   zone = "internal.locthp.com."
+#   name = "prometheus.central-monitoring"
+#   addresses = [
+#     module.monitoring-server-provision.output_map["monitoring-server"]
+#   ]
+#   ttl = 300
+# }
+# resource "dns_a_record_set" "grafana" {
+#   zone = "internal.locthp.com."
+#   name = "grafana.central-monitoring"
+#   addresses = [
+#     module.monitoring-server-provision.output_map["monitoring-server"]
+#   ]
+#   ttl = 300
+# }
+# resource "dns_a_record_set" "alertmanager" {
+#   zone = "internal.locthp.com."
+#   name = "alertmanager.central-monitoring"
+#   addresses = [
+#     module.monitoring-server-provision.output_map["monitoring-server"]
+#   ]
+#   ttl = 300
+# }
 
-resource "dns_a_record_set" "loki" {
-  zone = "internal.locthp.com."
-  name = "loki.central-monitoring"
-  addresses = [
-    module.monitoring-server-provision.output_map["monitoring-server"]
-  ]
-  ttl = 300
-}
+# resource "dns_a_record_set" "loki" {
+#   zone = "internal.locthp.com."
+#   name = "loki.central-monitoring"
+#   addresses = [
+#     module.monitoring-server-provision.output_map["monitoring-server"]
+#   ]
+#   ttl = 300
+# }

@@ -69,7 +69,7 @@ pipeline {
                     script {
                         sh '''
                         #ssh ${REMOTE_USER}@${REMOTE_SERVER} "curl --resolve prometheus.central-monitoring.internal.locthp.com:443:127.0.0.1 -X POST https://prometheus.central-monitoring.internal.locthp.com/-/reload> /dev/null 2>&1"
-                        curl --resolve prometheus.central-monitoring.internal.locthp.com:443:127.0.0.1 -X POST https://prometheus.central-monitoring.internal.locthp.com/-/reload
+                        curl -X POST https://prometheus.central-monitoring.internal.locthp.com/-/reload
                         '''
                     }
                 }

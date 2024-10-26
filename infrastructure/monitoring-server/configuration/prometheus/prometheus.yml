@@ -64,7 +64,6 @@ scrape_configs:
        - k8s-prod-cluster-haproxy-02.internal.locthp.com:8405
        - haproxy-master.internal.locthp.com:8405
 
-
 #  - job_name: 'envoy'
 #    metrics_path: '/stats'
 #    params:

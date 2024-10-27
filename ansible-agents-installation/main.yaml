@@ -11,15 +11,15 @@
   remote_user: locthp
   become: true
   tasks:
-  - name: Update the Ubuntu servers to be latest
-    apt:
-      update_cache: true
-      force_apt_get: true
-      upgrade: "yes"
-    when: ansible_distribution == "Ubuntu"
-    async: 7200
-    poll: 5
-    register: update_result
+  # - name: Update the Ubuntu servers to be latest
+  #   apt:
+  #     update_cache: true
+  #     force_apt_get: true
+  #     upgrade: "yes"
+  #   when: ansible_distribution == "Ubuntu"
+  #   async: 7200
+  #   poll: 5
+  #   register: update_result
   - name: Install docker
     block:
       - name: Install necessary components

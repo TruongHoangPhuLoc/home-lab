@@ -24,7 +24,7 @@ services:
     volumes:
       - ./loki/local-config.yaml:/etc/loki/local-config.yaml
       - loki_data:/loki
-      - $CERT_FOLDER:/etc/loki/ssl/
+      #- $CERT_FOLDER:/etc/loki/ssl/
     networks:
       - monitoring
   grafana:

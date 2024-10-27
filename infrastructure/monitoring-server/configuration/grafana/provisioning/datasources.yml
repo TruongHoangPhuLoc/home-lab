@@ -7,11 +7,11 @@ datasources:
     url: http://prometheus:9090
     isDefault: true
 
-  - name: Loki
-    type: loki
-    access: proxy 
-    orgId: 1
-    url: https://loki.central-monitoring.internal.locthp.com
-    basicAuth: false
-    version: 1
-    editable: false
+  # - name: Loki
+  #   type: loki
+  #   access: proxy 
+  #   orgId: 1
+  #   url: https://loki.central-monitoring.internal.locthp.com
+  #   basicAuth: false
+  #   version: 1
+  #   editable: false

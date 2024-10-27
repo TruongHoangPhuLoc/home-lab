@@ -58,11 +58,7 @@ pipeline {
                 expression{
                         params.Is_First_Initialization == false
                 }
-                anyOf {
-                    changeset "**/monitoring-server/configuration/prometheus/alert_rules/**"
-                    changeset "**/monitoring-server/configuration/prometheus/recording_rules/**"
-                    changeset "**/monitoring-server/configuration/prometheus/prometheus.yml"
-                }
+                changeset "**/monitoring-server/configuration/prometheus/**"
             }
             steps {
                 sshagent([SSH_CREDENTIALS_ID]) {
@@ -78,7 +74,12 @@ pipeline {
         stage('Re-Deploy_Monitoring_Stack') {
             when {
                 allOf{
-                    changeset "**/monitoring-server/configuration/docker-compose.yml"
+                    anyOf {
+                        changeset "**/monitoring-server/configuration/docker-compose.yml"
+                        changeset "**/monitoring-server/configuration/alertmanager/**"
+                        changeset "**/monitoring-server/configuration/grafana/**"
+                        changeset "**/monitoring-server/configuration/loki/**"
+                    }
                     expression{
                         params.Is_First_Initialization == false
                     }

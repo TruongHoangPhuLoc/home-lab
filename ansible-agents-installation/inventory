@@ -18,6 +18,7 @@
 172.16.1.103
 172.16.1.104
 172.16.1.105
+172.16.1.240
 [all:vars]
 NODE_EXPORTER_YML_URL=https://raw.githubusercontent.com/TruongHoangPhuLoc/home-lab/main/compose_files/node-exporter-docker-compose.yml
 PROMTAIL_YML_URL=https://raw.githubusercontent.com/TruongHoangPhuLoc/home-lab/main/compose_files/promtail-docker-compose.yml

@@ -1,0 +1,19 @@
+- hosts: all
+  remote_user: locthp
+  become: true
+  name: Check if a specific file exists on servers
+  tasks:
+    - name: Check if the file exists
+      stat:
+        path: /var/log/fontconfig.log  # Specify the file path here
+      register: file_check
+
+    - name: Print file presence status
+      debug:
+        msg: "The file is present on {{ inventory_hostname }}"
+      when: file_check.stat.exists
+
+    - name: Print file absence status
+      debug:
+        msg: "The file is NOT present on {{ inventory_hostname }}"
+      when: not file_check.stat.exists

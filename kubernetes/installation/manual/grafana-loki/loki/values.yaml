@@ -2847,6 +2847,13 @@ memcached:
     tag: 1.6.23-alpine
     # -- Memcached Docker image pull policy
     pullPolicy: IfNotPresent
+
+  resources:
+    limits:
+      memory: "2048Mi"
+    requests:
+      cpu: 500m
+      memory: "1024Mi"
   # -- The SecurityContext override for memcached pods
   podSecurityContext: {}
   # -- The name of the PriorityClass for memcached pods
@@ -2895,7 +2902,7 @@ resultsCache:
   # -- Port of the results-cache service
   port: 11211
   # -- Amount of memory allocated to results-cache for object storage (in MB).
-  allocatedMemory: 1024
+  allocatedMemory: 2048
   # -- Maximum item results-cache for memcached (in MB).
   maxItemMemory: 5
   # -- Maximum number of connections allowed
@@ -2983,7 +2990,7 @@ chunksCache:
   # -- Port of the chunks-cache service
   port: 11211
   # -- Amount of memory allocated to chunks-cache for object storage (in MB).
-  allocatedMemory: 
+  allocatedMemory: 2048
   # -- Maximum item memory for chunks-cache (in MB).
   maxItemMemory: 5
   # -- Maximum number of connections allowed

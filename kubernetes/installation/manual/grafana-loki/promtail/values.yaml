@@ -250,7 +250,9 @@ extraVolumes: []
 extraVolumeMounts: []
 
 # Extra args for the Promtail container.
-extraArgs: []
+#extraArgs: []
+extraArgs:
+    - -config.expand-env=true
 # -- Example:
 # -- extraArgs:
 # --   - -client.external-labels=hostname=$(HOSTNAME)
@@ -259,7 +261,11 @@ extraArgs: []
 # Tracing currently only support configure via environment variables. See:
 # https://grafana.com/docs/loki/latest/clients/promtail/configuration/#tracing_config
 # https://www.jaegertracing.io/docs/1.16/client-features/
-extraEnv: []
+extraEnv: 
+    - name: HOSTNAME
+      valueFrom:
+        fieldRef:
+          fieldPath: spec.nodeName
 
 # -- Extra environment variables from secrets or configmaps
 extraEnvFrom: []
@@ -504,6 +510,7 @@ config:
             - localhost
           labels:
             job: kubernetes/system-log
+            hostname: ${HOSTNAME}
             __path__: /var/log/*log
 
       - job_name: kubernetes/systemd-journal

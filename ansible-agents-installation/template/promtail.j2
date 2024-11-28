@@ -9,12 +9,13 @@ clients:
   - url: https://loki.central-monitoring.internal.locthp.com/loki/api/v1/push
 
 scrape_configs:
-- job_name: system
+- job_name: system-log
   static_configs:
   - targets:
       - localhost
     labels:
-      job: varlogs
+      job: system-log
+      hostname: {{ ansible_hostname }}
       __path__: /var/log/*log
 
 - job_name: journal
@@ -46,3 +47,15 @@ scrape_configs:
         target_label: "level"
       - source_labels: ["__journal_syslog_message_facility"]
         target_label: "syslog_facility"
+
+# Optional Jobs       
+{% if 'haproxy' in ansible_hostname %}
+- job_name: haproxy-log
+  static_configs:
+  - targets:
+      - localhost
+    labels:
+      job: haproxy-log
+      hostname: {{ ansible_hostname }}
+      __path__: /var/log/haproxy/*log
+{% endif %}

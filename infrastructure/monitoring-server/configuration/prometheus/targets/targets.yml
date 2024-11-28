@@ -17,5 +17,6 @@
   - '172.16.1.103:9100'
   - '172.16.1.104:9100'
   - '172.16.1.105:9100'
+  - 'elasticsearch.central-monitoring.internal.locthp.com'
   labels:
     job: 'node-exporter'

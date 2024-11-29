@@ -99,7 +99,6 @@ resource "ansible_group" "group-all" {
   }
 }
 resource "null_resource" "running-ansible" {
-  depends_on = [ ansible_host.hosts ]
     provisioner "local-exec" {
     command = "ansible-playbook -i inventory.yaml /Users/truonghoangphuloc/Desktop/home-lab/ansible-agents-installation/main.yaml"
   }

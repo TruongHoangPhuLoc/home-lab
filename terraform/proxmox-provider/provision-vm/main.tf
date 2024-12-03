@@ -22,6 +22,7 @@ resource "proxmox_vm_qemu" "provision-proxmox-vm" {
   memory = each.value.memory.amount
   scsihw = "virtio-scsi-single"
   ciupgrade = var.misc.ciupgrade
+  onboot = var.misc.onboot
   disks {
     ide {
         ide0 {

@@ -94,9 +94,10 @@ variable "instances_configurations" {
 }
 variable "misc" {
   type = object({
+    onboot = optional(bool, true)
     ciupgrade = optional(bool, true)
     ciuser = optional(string, "locthp")
-    template = optional(string, "cloudinit-ubuntu-22.04-template" )
+    template = optional(string, "cloudinit-ubuntu-24.04-template" )
   })
   default = {}
 }

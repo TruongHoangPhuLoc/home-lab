@@ -13,6 +13,7 @@ common:
     filesystem:
       chunks_directory: /loki/chunks
       rules_directory: /loki/rules
+      retention_period: 30d
   replication_factor: 1
   ring:
     kvstore:

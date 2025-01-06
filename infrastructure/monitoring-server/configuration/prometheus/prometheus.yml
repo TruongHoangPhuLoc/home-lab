@@ -75,3 +75,15 @@ scrape_configs:
 #      - 172.16.1.245:9091
 
 
+  - job_name: 'misp-exporter'
+    scheme: https
+    file_sd_configs:
+      - files:
+        - ./targets/.secret/*.yml    
+    http_headers:
+      CF-Access-Client-Id:
+        files:
+         - './targets/.secret/id'
+      CF-Access-Client-Secret:
+        files:
+         - './targets/.secret/secret'

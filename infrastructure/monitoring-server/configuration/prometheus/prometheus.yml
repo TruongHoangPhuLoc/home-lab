@@ -87,3 +87,4 @@ scrape_configs:
       CF-Access-Client-Secret:
         files:
          - './targets/.secret/secret'
+         

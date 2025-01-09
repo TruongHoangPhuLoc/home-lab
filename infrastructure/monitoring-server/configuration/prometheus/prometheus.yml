@@ -94,4 +94,11 @@ scrape_configs:
     metrics_path: '/cadvisor'
     file_sd_configs:
       - files:
-        - ./targets/.secret/*.yml   
+        - ./targets/.secret/*.yml  
+    http_headers:
+      CF-Access-Client-Id:
+        files:
+         - './targets/.secret/id'
+      CF-Access-Client-Secret:
+        files:
+         - './targets/.secret/secret' 

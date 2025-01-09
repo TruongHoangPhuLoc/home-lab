@@ -1,4 +1,9 @@
 loki:
+  compactor:
+    compaction_interval: 10m
+    retention_enabled: true
+    retention_delete_delay: 2h
+    delete_request_store: s3
   schemaConfig:
     configs:
       - from: 2024-04-01
@@ -73,6 +78,8 @@ bloomGateway:
 # Enable minio for storage
 minio:
   enabled: true
+  persistence:
+    size: 10Gi
 
 # Zero out replica counts of other deployment modes
 backend:
@@ -84,3 +91,7 @@ write:
 
 singleBinary:
   replicas: 0 
+
+chunksCache:
+  enabled: true
+  allocatedMemory: 2048

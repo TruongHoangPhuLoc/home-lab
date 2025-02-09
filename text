@@ -1,1 +1,96 @@
+input {
+    beats {
+    port => 5045
+    add_field => { "pipeline_source" => "haproxy" }
+    }
+}
 
+
+filter {
+    if [pipeline_source] == "haproxy" {
+        if [message] =~ "\A\s*\{.+\}\z" {
+            json {
+                source => "message"
+            }
+            if [http_cf_connecting_ip] and [http_cf_connecting_ip] != "" {
+                http{
+                    url => "https://iplookup.internal.locthp.com/lookup" 
+                    verb => "POST" 
+                    headers => {
+                        "Content-Type" => "application/json"
+                    }
+                    body => {
+                        "ip" => "%{http_cf_connecting_ip}"
+                    }
+                    body_format => "json"
+                    target_body => "geoip"
+                }
+            }
+            mutate {
+                convert => { "bytes_sent" => "integer" }
+                convert => { "request_time" => "float" }
+                convert => { "status" => "integer" }
+                convert => { "duration" => "float" }
+                convert => { "request_length" => "integer" }
+                add_tag => ["access_log"]
+                gsub => [
+                    "message", "^\s+", "", # Remove leading spaces
+                    "message", "\s+$", "" # Remove trailing spaces
+                ]
+            }
+        ruby {
+            code => "event.set('request_time', event.get('request_time') / 1000.0)"  # Convert ms to seconds
+    }
+            ruby {
+                    code => "event.set('duration', event.get('duration') / 1000.0)"
+            }
+        }
+        else {
+            grok {
+                match => {
+                        "message" => [
+                            "%{TIMESTAMP_ISO8601:timestamp} %{HOSTNAME:hostname} %{WORD:program}\[%{NUMBER:pid}\]: \[%{WORD:level}\] *\(%{NUMBER:duplicate_pid}\) : %{GREEDYDATA:error_message}"
+                        ]
+                    }
+                }
+
+                if [level] and [error_message] and [pid]{
+                    mutate {
+                        add_tag => ["error_log"]
+                        remove_field => ["duplicate_pid"]
+                }
+            }
+        }
+    }
+}
+
+output {
+    if [pipeline_source] == "haproxy" {
+        if "access_log" in [tags]{
+                elasticsearch {
+                hosts => ["https://127.0.0.1:9200"]
+                index => "haproxy-access-logs-%{+YYYY.MM.dd}"
+                user => "elastic"
+                password => "Phuloc@99."
+                ssl => true
+                cacert => "/etc/elasticsearch/certs/http_ca.crt"
+            }
+            stdout {
+                codec => rubydebug
+            }
+        }
+        if "error_log" in [tags] {
+            elasticsearch {
+                hosts => ["https://127.0.0.1:9200"]
+                index => "haproxy-error-logs-%{+YYYY.MM.dd}"
+                user => "elastic"
+                password => "Phuloc@99."
+                ssl => true
+                cacert => "/etc/elasticsearch/certs/http_ca.crt"
+            }
+            stdout {
+                codec => rubydebug
+            }
+        }
+    }
+}

@@ -182,7 +182,7 @@ storage:
   ##
   ## @param storage.size size of storage [depends](https://docs.percona.com/percona-monitoring-and-management/setting-up/server/index.html#set-up-pmm-server) on number of monitored services and data retention
   ##
-  size: 10Gi
+  size: 15Gi
   ##
   ## @param storage.dataSource VolumeSnapshot to start from
   ##

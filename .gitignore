@@ -1,4 +1,4 @@
 *secret*
 tunnels_start
 *talos-based-k8s*
-*.crt
+*.crt.venv/

@@ -13,6 +13,8 @@ loki:
         index:
           prefix: loki_index_
           period: 24h
+  limits_config:
+    retention_period: 1d
   ingester:
     chunk_encoding: snappy
   tracing:

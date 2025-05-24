@@ -3,3 +3,4 @@ tunnels_start
 *talos-based-k8s*
 *.crt.venv/
 .terraform/
+.terraform/

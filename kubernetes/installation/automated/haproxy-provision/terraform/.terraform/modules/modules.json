@@ -1,1 +1,0 @@
-{"Modules":[{"Key":"","Source":"","Dir":"."},{"Key":"haproxy-nodes-provision","Source":"../../../../../terraform/proxmox-provider/provision-vm","Dir":"../../../../../terraform/proxmox-provider/provision-vm"},{"Key":"k8s-nodes-provision","Source":"../../../../../terraform/proxmox-provider/provision-vm","Dir":"../../../../../terraform/proxmox-provider/provision-vm"}]}

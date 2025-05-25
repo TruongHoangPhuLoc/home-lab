@@ -59,23 +59,37 @@ gateway:
 deploymentMode: Distributed
 
 ingester:
-  replicas: 1
+  replicas: 3
+  persistence:
+    enabled: false
 querier:
-  replicas: 1
-  maxUnavailable: 1
+  replicas: 3
+  maxUnavailable: 2
+  persistence:
+    enabled: false
 queryFrontend:
-  replicas: 1
+  replicas: 2
   maxUnavailable: 1
+  persistence:
+    enabled: false
 queryScheduler:
-  replicas: 1
+  replicas: 2
+  persistence:
+    enabled: false
 distributor:
-  replicas: 1
-  maxUnavailable: 1
+  replicas: 3
+  maxUnavailable: 2
+  persistence:
+    enabled: false
 compactor:
   replicas: 1
+  persistence:
+    enabled: false
 indexGateway:
-  replicas: 1
+  replicas: 2
   maxUnavailable: 1
+  persistence:
+    enabled: false
 
 bloomCompactor:
   replicas: 0

@@ -1,4 +1,9 @@
 loki:
+  storage:
+    bucketNames:
+      chunks: chunks
+      ruler: ruler
+      admin: admin
   compactor:
     compaction_interval: 10m
     retention_enabled: true

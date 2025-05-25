@@ -962,6 +962,9 @@ grafana:
   namespaceOverride: ""
   admin:
     existingSecret: eso-kubernetes-secret
+    userKey: admin-user
+    passwordKey: admin-password
+
 
   ## ForceDeployDatasources Create datasource configmap even if grafana deployment has been disabled
   ##

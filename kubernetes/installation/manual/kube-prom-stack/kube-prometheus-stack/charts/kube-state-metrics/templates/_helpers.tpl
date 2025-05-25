@@ -66,7 +66,7 @@ app.kubernetes.io/part-of: {{ template "kube-state-metrics.name" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 {{- if .Values.customLabels }}
-{{ toYaml .Values.customLabels }}
+{{ tpl (toYaml .Values.customLabels) . }}
 {{- end }}
 {{- if .Values.releaseLabel }}
 release: {{ .Release.Name }}
@@ -87,6 +87,25 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 
 {{/* Sets default scrape limits for servicemonitor */}}
 {{- define "servicemonitor.scrapeLimits" -}}
+{{- with .sampleLimit }}
+sampleLimit: {{ . }}
+{{- end }}
+{{- with .targetLimit }}
+targetLimit: {{ . }}
+{{- end }}
+{{- with .labelLimit }}
+labelLimit: {{ . }}
+{{- end }}
+{{- with .labelNameLengthLimit }}
+labelNameLengthLimit: {{ . }}
+{{- end }}
+{{- with .labelValueLengthLimit }}
+labelValueLengthLimit: {{ . }}
+{{- end }}
+{{- end -}}
+
+{{/* Sets default scrape limits for scrapeconfig */}}
+{{- define "scrapeconfig.scrapeLimits" -}}
 {{- with .sampleLimit }}
 sampleLimit: {{ . }}
 {{- end }}

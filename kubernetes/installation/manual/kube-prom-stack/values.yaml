@@ -960,6 +960,8 @@ alertmanager:
 grafana:
   enabled: true
   namespaceOverride: ""
+  admin:
+    existingSecret: eso-kubernetes-secret
 
   ## ForceDeployDatasources Create datasource configmap even if grafana deployment has been disabled
   ##
@@ -981,11 +983,6 @@ grafana:
   ## Editable flag for the default dashboards
   ##
   defaultDashboardsEditable: true
-
-
-
-  # Change
-  adminPassword: "admin"
 
   rbac:
     ## If true, Grafana PSPs will be created

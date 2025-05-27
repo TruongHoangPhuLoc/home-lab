@@ -59,60 +59,49 @@ gateway:
 deploymentMode: Distributed
 
 ingester:
-  replicas: 3
-  persistence:
-    enabled: false
+  replicas: 3 # To ensure data durability with replication
+  zoneAwareReplication:
+     enabled: false
 querier:
-  replicas: 3
+  replicas: 3 # Improve query performance via parallelism
   maxUnavailable: 2
-  persistence:
-    enabled: false
 queryFrontend:
   replicas: 2
   maxUnavailable: 1
-  persistence:
-    enabled: false
 queryScheduler:
   replicas: 2
-  persistence:
-    enabled: false
 distributor:
-  replicas: 3
+  replicas: 3 
   maxUnavailable: 2
-  persistence:
-    enabled: false
 compactor:
   replicas: 1
-  persistence:
-    enabled: false
 indexGateway:
   replicas: 2
   maxUnavailable: 1
-  persistence:
-    enabled: false
 
-bloomCompactor:
+bloomPlanner:
+  replicas: 0
+bloomBuilder:
   replicas: 0
 bloomGateway:
   replicas: 0
 
-# Enable minio for storage
-minio:
-  enabled: true
-  persistence:
-    size: 10Gi
-
-# Zero out replica counts of other deployment modes
 backend:
-  replicas: 0
+   replicas: 0
 read:
-  replicas: 0
+   replicas: 0
 write:
-  replicas: 0
+   replicas: 0
 
 singleBinary:
-  replicas: 0 
+   replicas: 0
 
 chunksCache:
   enabled: true
   allocatedMemory: 2048
+
+
+minio:
+  enabled: false
+  persistence:
+    size: 5Gi

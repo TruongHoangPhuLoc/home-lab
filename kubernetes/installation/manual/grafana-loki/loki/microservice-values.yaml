@@ -103,5 +103,22 @@ chunksCache:
 
 minio:
   enabled: true
+  drivesPerNode: 2
+  replicas: 1
+  buckets:
+    - name: chunks
+      policy: none
+      purge: false
+    - name: ruler
+      policy: none
+      purge: false
+    - name: admin
+      policy: none
+      purge: false
   persistence:
     size: 5Gi
+    annotations: {}
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi

@@ -25,33 +25,7 @@ ingress:
 storage:
   ## @param storage.name name of PVC
   name: pmm-storage
-  ## @param storage.storageClassName optional PMM data Persistent Volume Storage Class
-  ## If defined, storageClassName: <storageClass>
-  ## If set to "-", storageClassName: "", which disables dynamic provisioning
-  ## If undefined (the default) or set to null, no storageClassName spec is
-  ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
-  ##   GKE, AWS & OpenStack)
-  ##
   storageClassName: ""
-  ##
-  ## @param storage.size size of storage [depends](https://docs.percona.com/percona-monitoring-and-management/setting-up/server/index.html#set-up-pmm-server) on number of monitored services and data retention
-  ##
   size: 10Gi
-  ##
-  ## @param storage.dataSource VolumeSnapshot to start from
-  ##
   dataSource: {}
-    ## name: before-vX.Y.Z-upgrade
-    ## kind: VolumeSnapshot
-    ## apiGroup: snapshot.storage.k8s.io
-  ##
-  ## @param storage.selector select existing PersistentVolume
-  ##
   selector: {}
-  ##   matchLabels:
-  ##     release: "stable"
-  ##   matchExpressions:
-  ##     - key: environment
-  ##       operator: In
-  ##       values:
-  ##         - dev

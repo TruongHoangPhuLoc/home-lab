@@ -70,8 +70,8 @@ output {
                 elasticsearch {
                 hosts => ["https://127.0.0.1:9200"]
                 index => "haproxy-access-logs-%{+YYYY.MM.dd}"
-                user => "elastic"
-                password => "Phuloc@99."
+                user => "secret"
+                password => "secret"
                 ssl => true
                 cacert => "/etc/elasticsearch/certs/http_ca.crt"
             }
@@ -83,8 +83,8 @@ output {
             elasticsearch {
                 hosts => ["https://127.0.0.1:9200"]
                 index => "haproxy-error-logs-%{+YYYY.MM.dd}"
-                user => "elastic"
-                password => "Phuloc@99."
+                user => "sercet"
+                password => "sercet"
                 ssl => true
                 cacert => "/etc/elasticsearch/certs/http_ca.crt"
             }

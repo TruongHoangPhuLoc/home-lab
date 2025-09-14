@@ -962,7 +962,7 @@ grafana:
   namespaceOverride: ""
   admin:
     ## Name of the secret. Can be templated.
-    existingSecret: "kube-prometheus-stack-grafana"
+    existingSecret: "grafana-creds"
     userKey: admin-user
     passwordKey: admin-password
   ## ForceDeployDatasources Create datasource configmap even if grafana deployment has been disabled

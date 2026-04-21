@@ -33,7 +33,7 @@ variable "pm_debug" {}
 
 variable "pm_tls_insecure" {}
 module "elasticstack-server-provision" {
-source = "/Users/truonghoangphuloc/Desktop/home-lab/terraform/proxmox-provider/provision-vm"
+source = "../../../proxmox/proxmox-provider/provision-vm"
 proxmox_params = {
   pm_api_url = var.pm_api_url
   pm_user = var.pm_user
@@ -94,13 +94,13 @@ resource "ansible_host" "hosts" {
 resource "ansible_group" "group-all" {
   name     = "all"
   variables = {
-    NODE_EXPORTER_YML_URL="https://raw.githubusercontent.com/TruongHoangPhuLoc/home-lab/main/compose_files/node-exporter-docker-compose.yml"
-    PROMTAIL_YML_URL="https://raw.githubusercontent.com/TruongHoangPhuLoc/home-lab/main/compose_files/promtail-docker-compose.yml"
+    NODE_EXPORTER_YML_URL="https://raw.githubusercontent.com/TruongHoangPhuLoc/home-lab/main/automation/ansible/compose-files/node-exporter-docker-compose.yml"
+    PROMTAIL_YML_URL="https://raw.githubusercontent.com/TruongHoangPhuLoc/home-lab/main/automation/ansible/compose-files/promtail-docker-compose.yml"
   }
 }
 resource "null_resource" "running-ansible" {
     provisioner "local-exec" {
-    command = "ansible-playbook -i inventory.yaml /Users/truonghoangphuloc/Desktop/home-lab/ansible-agents-installation/main.yaml"
+    command = "ansible-playbook -i inventory.yaml ../../../../automation/ansible/agents-installation/main.yaml"
   }
 }
 # Update new A record for the provision server

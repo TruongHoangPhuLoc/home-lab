@@ -42,7 +42,7 @@ variable "vip" {
   default = "172.16.1.100"
 }
 module "mysql_cluster_provision" {
-source = "/Users/truonghoangphuloc/Desktop/home-lab/terraform/proxmox-provider/provision-vm"
+source = "../../../proxmox/proxmox-provider/provision-vm"
 proxmox_params = {
   pm_api_url = var.pm_api_url
   pm_user = var.pm_user

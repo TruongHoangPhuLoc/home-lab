@@ -26,7 +26,7 @@ variable "pm_debug" {}
 
 variable "pm_tls_insecure" {}
 module "monitoring-server-provision" {
-source = "/Users/truonghoangphuloc/Desktop/home-lab/terraform/proxmox-provider/provision-vm"
+source = "../../../proxmox/proxmox-provider/provision-vm"
 proxmox_params = {
   pm_api_url = var.pm_api_url
   pm_user = var.pm_user

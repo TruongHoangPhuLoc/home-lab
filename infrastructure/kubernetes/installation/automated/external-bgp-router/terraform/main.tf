@@ -27,7 +27,7 @@ variable "pm_tls_insecure" {
   
 }
 module "external-bgp-router" {
-source = "../../../../../terraform/proxmox-provider/provision-vm"
+source = "../../../../../proxmox/proxmox-provider/provision-vm"
 proxmox_params = {
   pm_api_url = var.pm_api_url
   pm_user = var.pm_user

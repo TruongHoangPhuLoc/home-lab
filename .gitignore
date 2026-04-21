@@ -2,5 +2,15 @@
 tunnels_start
 *talos-based-k8s*
 *.crt.venv/
+
+# Terraform
 .terraform/
-.terraform/
+*.tfstate
+*.tfstate.backup
+
+# Python
+__pycache__/
+*.pyc
+
+# OS
+.DS_Store

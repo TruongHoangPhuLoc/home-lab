@@ -87,3 +87,112 @@ sops updatekeys existing.enc.yaml
 - Sensitive values always live in a `kind: Secret` wrapper. Helm charts reference them by name (`existingSecret`, `secretName`, etc.), not by inline value.
 - Encrypted files are named `*.enc.yaml` (matched by `.sops.yaml` path_regex).
 - Plaintext helm values and ArgoCD Application manifests stay readable; only the Secret YAMLs are encrypted.
+
+## Safety checks (planned — not yet implemented)
+
+SOPS encryption is **not automatic** — `sops` is a CLI tool you have to invoke explicitly. A file named `foo.enc.yaml` is only actually encrypted if you ran `sops` on it. Two layers of safety to add before real secret migration begins:
+
+### Layer 1 — Pre-commit hook (local, fast feedback)
+
+Rejects any staged `*.enc.yaml` file that isn't SOPS-encrypted. Shared via git so every clone gets the same protection after one-time install.
+
+`.pre-commit-config.yaml` at repo root:
+```yaml
+repos:
+  - repo: local
+    hooks:
+      - id: sops-encrypted
+        name: Verify *.enc.yaml files are SOPS-encrypted
+        entry: bash -c 'for f in "$@"; do grep -q "^sops:" "$f" || { echo "ERROR: $f matches *.enc.yaml but is NOT encrypted. Run: sops -e -i $f"; exit 1; }; done' --
+        language: system
+        files: '\.enc\.yaml$'
+
+  # Useful generic hooks to add alongside
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-merge-conflict
+```
+
+Per-workstation install (one time):
+```bash
+pip install pre-commit         # or brew install pre-commit
+pre-commit install             # writes .git/hooks/pre-commit
+```
+
+Test:
+```bash
+echo "apiVersion: v1" > bad.enc.yaml   # plaintext, not encrypted
+git add bad.enc.yaml
+git commit -m test                     # ← blocked with clear error
+```
+
+### Layer 2 — GitHub Actions (remote, catches what slipped through)
+
+Even with pre-commit installed, someone can always `--no-verify` or commit from another machine. GH Actions on every push/PR provides the last-line defense and covers more than just SOPS safety.
+
+`.github/workflows/security.yml`:
+```yaml
+name: security-scan
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  gitleaks:
+    # Detects committed API keys, tokens, passwords. Also catches SOPS leaks
+    # that slipped through pre-commit, and scans full git history.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  trivy-config:
+    # IaC misconfiguration: Terraform, k8s manifests, Dockerfiles, helm charts.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: config
+          severity: CRITICAL,HIGH
+          exit-code: 1
+          ignore-unfixed: true
+
+  kube-linter:
+    # k8s manifest quality (missing resource limits, privileged containers, ...)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: stackrox/kube-linter-action@v1
+        with:
+          directory: .
+          format: sarif
+          output-file: kube-linter.sarif
+```
+
+**Also turn on in GitHub repo settings:**
+- *Secret scanning* + *Secret scanning push protection* (free for public repos, paid for private)
+- *Dependabot security updates* (catches vulnerable dependencies if this repo ever grows a package.json / requirements.txt)
+
+### Why both layers
+
+| Scenario | pre-commit catches | GH Actions catches |
+|---|---|---|
+| You forget to run `sops` before `git commit` | ✅ | ✅ (backup) |
+| You commit with `--no-verify` | ❌ | ✅ |
+| Teammate clones fresh and hasn't run `pre-commit install` | ❌ | ✅ |
+| Historical leaked secret in git history | ❌ (local only) | ✅ (gitleaks scans history) |
+| Terraform resource exposing a public IP by accident | ❌ | ✅ (Trivy) |
+| Pod spec missing resource limits | ❌ | ✅ (kube-linter) |
+
+Pre-commit is your fast local loop; GH Actions is the line you can't bypass.

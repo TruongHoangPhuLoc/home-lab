@@ -63,7 +63,7 @@ resource "null_resource" "waiting_instances_ready" {
     connection {
       host = each.value
       user = "locthp"
-      private_key = file("/Users/truonghoangphuloc/.ssh/id_ed25519")
+      private_key = file("~/.ssh/id_ed25519")
     }
     inline = ["while [ ! -f /var/lib/cloud/instance/boot-finished ]; do echo 'Waiting for cloud-init...'; sleep 1; done"]
   }

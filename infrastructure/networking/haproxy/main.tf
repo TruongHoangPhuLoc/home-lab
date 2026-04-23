@@ -92,7 +92,7 @@ resource "ansible_group" "group-all" {
 resource "null_resource" "running-ansible" {
   depends_on = [ ansible_host.hosts ]
     provisioner "local-exec" {
-    command = "ansible-playbook -i inventory.yaml ../../../automation/ansible/agents-installation/main.yaml"
+    command = "ansible-playbook -i inventory.yaml ../../../automation/ansible/playbooks/agents-installation.yaml"
   }
 }
 # Update new A record for the provision server

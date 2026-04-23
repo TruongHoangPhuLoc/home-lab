@@ -81,7 +81,7 @@
           mode: '0755'
       - name: Copy Promtail config into agent
         template:
-          src: template/promtail.j2
+          src: ../templates/promtail.j2
           dest: /promtail/promtail.yml
           mode: '0644'
       - name: Execute compose

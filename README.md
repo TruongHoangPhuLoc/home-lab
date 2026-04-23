@@ -19,8 +19,19 @@ Most cluster platform services (ArgoCD, cert-manager, cilium, ingress-nginx, tra
 
 ## Current direction
 
-- **ArgoCD migration** — bringing existing Helm releases under ArgoCD `Application` CRDs so the cluster state is fully in git rather than imperatively installed. Blocked on a secret-management decision (External Secrets Operator vs. Sealed Secrets vs. SOPS+KSOPS).
+- **ArgoCD migration** — bringing existing Helm releases under ArgoCD `Application` CRDs so the cluster state is fully in git rather than imperatively installed. `ingress-nginx` is excluded from this work — it is being phased out in favour of Cilium + Traefik.
 - **Terraform state to Ceph S3** — moving Terraform `tfstate` files off local disk into the in-cluster Rook-Ceph RGW as a durable S3-compatible backend.
+
+## Secret management
+
+Secrets are encrypted with [SOPS](https://github.com/getsops/sops) using [age](https://github.com/FiloSottile/age) and committed to the repo as `*.enc.yaml` files. A KSOPS sidecar in `argocd-repo-server` decrypts them at render time. Configuration is in [`.sops.yaml`](./.sops.yaml) at the repo root.
+
+Public key (safe to share):
+```
+age1f2ga2qhdv6hpfhlelk7t633yzh78u4jdkwxkxrcpml5a7tzyd9ps99zmkj
+```
+
+See [`platform/argocd/BOOTSTRAP.md`](./platform/argocd/BOOTSTRAP.md) for setup, daily workflow, and recovery procedures.
 
 ## Achievements
 

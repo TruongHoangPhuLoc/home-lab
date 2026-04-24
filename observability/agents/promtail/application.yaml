@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: promtail
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/TruongHoangPhuLoc/home-lab.git
+    targetRevision: main
+    path: observability/agents/promtail
+    plugin:
+      name: ksops
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: logging
+  syncPolicy:
+    # Conservative during adoption. Once green for a few sync cycles,
+    # flip these to `true` in a separate commit.
+    automated:
+      prune: false
+      selfHeal: false
+    syncOptions:
+      - ServerSideApply=true
+      - CreateNamespace=false
+      - RespectIgnoreDifferences=true
+  ignoreDifferences:
+    # Helm-controlled rolling-update field that shifts on pod template changes.
+    - group: apps
+      kind: DaemonSet
+      jsonPointers:
+        - /spec/templateGeneration

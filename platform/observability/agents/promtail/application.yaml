@@ -17,11 +17,10 @@ spec:
     server: https://kubernetes.default.svc
     namespace: logging
   syncPolicy:
-    # Conservative during adoption. Once green for a few sync cycles,
-    # flip these to `true` in a separate commit.
+    # Promoted to full auto-drive after initial adoption verified green.
     automated:
-      prune: false
-      selfHeal: false
+      prune: true
+      selfHeal: true
     syncOptions:
       - ServerSideApply=true
       - CreateNamespace=false

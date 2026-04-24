@@ -210,6 +210,31 @@ Add to this list as you encounter new ones.
 |---|---|---|
 | `apps/DaemonSet` | `/spec/templateGeneration` | Helm increments this on rolling updates; drifts independently of git state. Seen on promtail. |
 
+## Common pitfalls during adoption
+
+### Live resource has duplicate-keyed list items → `ComparisonError` blocks sync
+
+ArgoCD with `ServerSideApply=true` uses structured merge diff, which requires every list-of-maps on the live resource to have unique values on its merge key. Two containers with the same name, two env vars with the same name, etc., will fail diff calculation with:
+
+```
+Failed to compare desired state to live state: failed to calculate diff:
+  error calculating structured merge diff: error building typed value from
+  live resource: .spec.template.spec.containers[name="X"].env:
+    duplicate entries for key [name="HOSTNAME"]
+```
+
+This error happens *before* `ignoreDifferences` is applied — you can't suppress it from the Application spec. Fix the live resource itself:
+
+```bash
+kubectl --context <ctx> patch <kind>/<name> -n <ns> --type json \
+  -p='[{"op":"replace","path":"/spec/template/spec/containers/0/env",
+         "value":[ <correct env list> ]}]'
+```
+
+ArgoCD re-diffs on the next cycle (~3 min) or on manual Refresh.
+
+**Seen on:** promtail DaemonSet, 2026-04-24. A historical chart bug had placed two identical `HOSTNAME` env entries on the container; kubelet accepted the duplicate but SSA didn't.
+
 ## When in doubt
 
 1. Open [`platform/observability/agents/promtail/`](./observability/agents/promtail/) as the reference implementation.

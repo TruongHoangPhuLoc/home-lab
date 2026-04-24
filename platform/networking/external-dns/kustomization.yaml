@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Chart from upstream kubernetes-sigs/external-dns.
+# KSOPS generator produces the TSIG Secret (external-dns-tsig) used by the
+# rfc2136 provider to authenticate with the BIND master.
+
+helmCharts:
+  - name: external-dns
+    repo: https://kubernetes-sigs.github.io/external-dns/
+    version: 1.17.0                # pinned; matches the current in-cluster app version
+    releaseName: external-dns
+    namespace: external-dns
+    valuesFile: values.yaml
+
+generators:
+  - ./ksops.yaml

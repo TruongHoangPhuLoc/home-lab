@@ -1,4 +1,6 @@
 *secret*
+# SOPS-encrypted files are safe to commit even if name matches *secret*
+!*.enc.yaml
 tunnels_start
 *talos-based-k8s*
 *.crt.venv/

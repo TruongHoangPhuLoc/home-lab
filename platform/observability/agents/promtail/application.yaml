@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: https://github.com/TruongHoangPhuLoc/home-lab.git
     targetRevision: main
-    path: observability/agents/promtail
+    path: platform/observability/agents/promtail
     plugin:
       name: ksops
   destination:

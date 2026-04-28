@@ -81,6 +81,18 @@ Apps-specific:
 9. **Pin container image tags.** End-user apps with `image: foo:latest + imagePullPolicy: Always` are the most common cause of mysterious post-redeploy regressions. Pin to a semver tag.
 10. **Config-as-env-var-substitution for secrets.** When an app's config file (e.g., `services.yaml` for homepage) inlines credentials, do **not** put them in `values.yaml` or the ConfigMap. Use the app's environment-variable substitution feature and source the values via `envFrom: secretRef` from a SOPS-encrypted Secret.
 
+### Editing `*.enc.yaml` (don't let plaintext land on disk)
+
+The committed blob must always contain `ENC[...]` ciphertext under `stringData` / `data` (verify with `grep '^sops:'`). If your working copy shows bare quoted secrets while `git show HEAD:<path>` still shows ciphertext, someone (or an editor autosave) **wrote decrypted YAML over** the encrypted file — common after `sops -d file.enc.yaml > file.enc.yaml` by mistake or opening the file outside `sops`. **Don't commit.** Restore the last encrypted revision, then edit only via SOPS:
+
+```bash
+git restore apps/<app>/secret.enc.yaml
+export SOPS_AGE_KEY_FILE="$HOME/.config/sops/age/keys.txt"
+sops apps/<app>/secret.enc.yaml
+```
+
+Cursor / VS Code Git diffs comparing your plaintext working tree against `HEAD` will look alarming; after `git restore`, the diff disappears.
+
 ## Adoption workflow (raw-manifest case, Variant B)
 
 The full helm-release adoption workflow is in [`platform/CLAUDE.md`](../platform/CLAUDE.md#adoption-workflow--migrate-an-existing-helm-release-to-argocd). For Variant B (the app was applied as raw manifests, no helm release ever existed), the only differences are steps 1–2:

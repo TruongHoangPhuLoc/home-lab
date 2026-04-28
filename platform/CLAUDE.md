@@ -142,9 +142,13 @@ spec:
    - Non-sensitive overrides → `values.yaml` (commit as plaintext)
    - API tokens, passwords, TSIG keys → wrap in `kind: Secret`, save as `secret.enc.yaml`, then `sops -e -i secret.enc.yaml`
    - Update `values.yaml` so the chart references the Secret by name (chart-specific pattern: `existingSecret`, `extraEnvVarsSecret`, etc.)
-3. **Write the 3–5 files** per the canonical templates above.
-4. **Commit + push** to the branch ArgoCD follows (`main`).
-5. **Clean up any old broken Application** (common after the 2026-04-21 restructure — stale source paths):
+3. **Handle initialization dependencies** (if any):
+   - If the workload requires external resources (certificates, external secrets), include both ongoing automation (CronJob) and bootstrap automation (one-time Job) in the same Application
+   - Use ArgoCD sync waves: bootstrap resources get `argocd.argoproj.io/sync-wave: "0"`, dependents get `"1"` or higher
+   - See `kube-prometheus-stack` migration in [`LESSONS.md`](./argocd/LESSONS.md) for the full bootstrap pattern
+4. **Write the 3–5 files** per the canonical templates above.
+5. **Commit + push** to the branch ArgoCD follows (`main`).
+6. **Clean up any old broken Application** (common after the 2026-04-21 restructure — stale source paths):
    ```bash
    # If metadata.finalizers is set, remove it first to avoid cascade-deleting resources:
    kubectl --context home-cluster patch application <name> -n argocd --type json \

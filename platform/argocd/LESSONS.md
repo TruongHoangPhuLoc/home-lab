@@ -27,6 +27,51 @@ If the same root cause shows up twice, **promote it** out of here into one of:
 
 ---
 
+## 2026-04-28 — kube-prometheus-stack migration: Helm-to-ArgoCD with bootstrap automation
+
+**What happened**: Migrating `kube-prometheus-stack` from Helm-managed to ArgoCD-managed revealed a complex multi-layered challenge: (1) Kustomize-wraps-Helm + KSOPS pattern adoption, (2) IngressClass migration from `traefik` to `cilium`, (3) dynamic etcd certificate management integration, (4) Helm ownership handoff without resource conflicts, and (5) bootstrap automation for initialization dependencies. Each piece worked individually but the integration exposed race conditions and manual steps that violated GitOps principles.
+
+**Root cause**: Multiple interconnected issues stemming from a sophisticated migration:
+
+1. **Secret dependency chicken-and-egg**: Prometheus StatefulSet required `etcd-client-certs` secret for etcd metrics scraping, but the secret was managed by a CronJob that only ran daily at midnight. Fresh deployments failed with `MountVolume.SetUp failed for volume "secret-etcd-client-certs": secret "etcd-client-certs" not found` until manual intervention.
+
+2. **Dual ownership conflict**: Helm release remained active while ArgoCD Application was deployed, creating resource ownership ambiguity. Both systems thought they owned the same Kubernetes objects, leading to potential drift and management conflicts.
+
+3. **Bootstrap timing gap**: No mechanism existed to ensure the etcd certificates were available before Prometheus attempted to mount them, requiring manual `kubectl create job --from=cronjob/etcd-cert-syncer` on every fresh deployment.
+
+**Fix** (commits `58bf457`, `b98794b`, `bb3503d`):
+
+- **Kustomize-wraps-Helm structure**: Created `platform/observability/monitoring/kube-prometheus-stack/` following the standard pattern with `values.yaml` (non-sensitive overrides), `secret.enc.yaml` (SOPS-encrypted Grafana credentials), `kustomization.yaml` (Helm chart inclusion + KSOPS), and `application.yaml` (ArgoCD Application CRD).
+
+- **IngressClass migration**: Changed all ingress definitions from `ingressClassName: traefik` to `ingressClassName: cilium` in the Helm values to consolidate on Cilium ingress controller.
+
+- **Dynamic certificate management**: Integrated existing `etcd-cert-syncer` CronJob into the ArgoCD Application by adding it as a resource in `kustomization.yaml`. The CronJob runs daily to refresh certificates from control plane nodes (`/etc/kubernetes/pki/etcd/`) into the monitoring namespace.
+
+- **Bootstrap automation**: Added a one-time Job (`etcd-cert-syncer-bootstrap`) alongside the CronJob to handle initial secret creation. Used ArgoCD sync waves (`argocd.argoproj.io/sync-wave: "0"` for bootstrap, `"1"` for Prometheus) to ensure proper ordering. Job includes `ttlSecondsAfterFinished: 86400` for automatic cleanup.
+
+- **Clean Helm handoff**: Used `helm uninstall kube-prometheus-stack --namespace monitoring --keep-history` to remove Helm ownership, then let ArgoCD sync recreate all resources from GitOps definitions. This eliminated dual ownership conflicts.
+
+**Why it took the time it took**: This migration touched multiple complex systems simultaneously. The bootstrap dependency issue only became apparent during testing when we discovered that deleting the secret caused Prometheus to fail startup. The standard CronJob approach worked for ongoing operations but created a manual initialization gap. The sync wave solution required understanding ArgoCD's resource ordering capabilities and testing the proper annotations in both Job metadata and Helm chart values.
+
+**Prevention going forward**:
+
+- **Bootstrap pattern documented**: Any component requiring external dependencies (certificates, external secrets, etc.) should include both ongoing automation (CronJob) and bootstrap automation (one-time Job with sync waves) in the same ArgoCD Application.
+
+- **Helm migration checklist**: (1) Extract current Helm values, (2) Split into non-sensitive (`values.yaml`) and sensitive (`secret.enc.yaml`) portions, (3) Create ArgoCD Application with manual sync initially, (4) Test deployment, (5) Remove Helm release with `--keep-history`, (6) Let ArgoCD recreate resources, (7) Enable auto-sync once stable.
+
+- **Dependency ordering**: Use ArgoCD sync waves for any components with initialization dependencies. Bootstrap components should be `sync-wave: "0"`, dependents should be higher numbers. Document the dependency chain in the Application or values file.
+
+- **Certificate management pattern**: External certificate sync should always include both scheduled refresh (CronJob) and bootstrap initialization (Job). Both should be managed within the same ArgoCD Application as the consuming workload to maintain GitOps coherence.
+
+**References**:
+- Initial migration: `58bf457` (platform/monitoring: migrate kube-prometheus-stack to ArgoCD)  
+- CronJob integration: `b98794b` (platform/monitoring: add etcd-cert-syncer CronJob to kube-prometheus-stack)
+- Bootstrap automation: `bb3503d` (platform/monitoring: add bootstrap Job for etcd-client-certs)
+- ArgoCD sync waves docs: <https://argo-cd.readthedocs.io/en/stable/user-guide/sync-waves/>
+- Kustomize Helm integration: <https://kubectl.docs.kubernetes.io/references/kustomize/builtins/#helmchartinflationgenerator>
+
+---
+
 ## 2026-04-28 — ksops CMP discovery timeout
 
 **What happened**: While migrating `apps/homepage/` from raw `kubectl apply` to ArgoCD-managed (commit `59d0984`), the new `homepage` Application stayed stuck in `ComparisonError` with:

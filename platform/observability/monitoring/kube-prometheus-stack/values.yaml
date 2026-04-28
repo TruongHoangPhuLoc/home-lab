@@ -87,6 +87,9 @@ prometheus:
     retention: 15d
     secrets:
     - etcd-client-certs
+    # Ensure Prometheus StatefulSet starts after the bootstrap job completes
+    statefulSetAnnotations:
+      argocd.argoproj.io/sync-wave: "1"
     storageSpec:
       volumeClaimTemplate:
         spec:

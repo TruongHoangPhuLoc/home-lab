@@ -47,6 +47,79 @@ subjects:
   name: etcd-cert-syncer
   namespace: monitoring
 ---
+# One-time Job to bootstrap etcd certificates for initial deployment
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: etcd-cert-syncer-bootstrap
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: kube-prometheus-stack
+    app.kubernetes.io/component: etcd-cert-syncer
+  annotations:
+    # Ensure this runs before Prometheus StatefulSet
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  backoffLimit: 3
+  ttlSecondsAfterFinished: 86400  # Clean up after 24 hours
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kube-prometheus-stack
+        app.kubernetes.io/component: etcd-cert-syncer
+    spec:
+      serviceAccountName: etcd-cert-syncer
+      restartPolicy: OnFailure
+      # Run only on control plane nodes where etcd certificates exist
+      nodeSelector:
+        node-role.kubernetes.io/control-plane: ""
+      tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
+      containers:
+      - name: syncer
+        image: bitnami/kubectl:latest
+        imagePullPolicy: Always
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+          runAsNonRoot: false
+          runAsUser: 0
+        command:
+        - /bin/sh
+        - -c
+        - |
+          # Set HOME to /tmp so kubectl can write its discovery cache
+          export HOME=/tmp
+          echo "Bootstrapping etcd-client-certs secret..."
+          kubectl create secret generic etcd-client-certs \
+            --namespace=monitoring \
+            --from-file=etcd-ca=/etc/kubernetes/pki/etcd/ca.crt \
+            --from-file=etcd-client=/etc/kubernetes/pki/etcd/healthcheck-client.crt \
+            --from-file=etcd-client-key=/etc/kubernetes/pki/etcd/healthcheck-client.key \
+            --dry-run=client -o yaml | kubectl apply -f -
+          echo "Secret bootstrapped successfully!"
+        volumeMounts:
+        - name: etcd-certs
+          mountPath: /etc/kubernetes/pki/etcd
+          readOnly: true
+        - name: tmp-dir
+          mountPath: /tmp
+      volumes:
+      - name: etcd-certs
+        hostPath:
+          path: /etc/kubernetes/pki/etcd
+          type: Directory
+      - name: tmp-dir
+        emptyDir: {}
+---
 # CronJob to sync etcd certificates from control plane to monitoring namespace
 apiVersion: batch/v1
 kind: CronJob

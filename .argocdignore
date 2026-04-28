@@ -1,0 +1,17 @@
+# Paths excluded from the tgz ArgoCD streams to CMP plugins (e.g. ksops)
+# during repository discovery (MatchRepository). Without this, the ~46 MB
+# working tree causes the ksops sidecar's 60s gRPC deadline to be exceeded,
+# resulting in "could not find cmp-server plugin with name ksops".
+#
+# Rule: only exclude directories that are NOT ArgoCD-managed source paths.
+# ArgoCD-managed paths (apps/homepage/, platform/**) must remain visible.
+
+# Not ArgoCD-managed: manual k8s install scripts + kubeadm configs (~29 MB)
+infrastructure/
+
+# Not ArgoCD-managed: chat-app source code + static assets (~16 MB)
+# chat-app/k8s/ raw manifests are applied by hand, not via an Application.
+apps/chat-app/
+
+# Not ArgoCD-managed: Ansible / Jenkins config management
+automation/

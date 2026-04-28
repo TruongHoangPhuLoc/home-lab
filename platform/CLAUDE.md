@@ -238,5 +238,7 @@ ArgoCD re-diffs on the next cycle (~3 min) or on manual Refresh.
 ## When in doubt
 
 1. Open [`platform/observability/agents/promtail/`](./observability/agents/promtail/) as the reference implementation.
-2. Search the memory directory for component-specific notes (`project_*.md`).
-3. Prefer asking before taking a destructive cluster action. Adoption should be idempotent — if it feels risky, it usually is.
+2. Read [`platform/argocd/ARCHITECTURE.md`](./argocd/ARCHITECTURE.md) for the end-to-end render pipeline (Application → repo-server → KSOPS sidecar → kustomize → cluster) with diagrams. Useful when something works in `kubectl apply -f` but fails in ArgoCD.
+3. Skim [`platform/argocd/LESSONS.md`](./argocd/LESSONS.md) for prior incidents with the same shape as what you're seeing.
+4. Search the memory directory for component-specific notes (`project_*.md`).
+5. Prefer asking before taking a destructive cluster action. Adoption should be idempotent — if it feels risky, it usually is.

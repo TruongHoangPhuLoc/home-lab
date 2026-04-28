@@ -43,13 +43,6 @@ rules:
     verbs:
       - get
       - list
-  # - apiGroups:
-  #     - traefik.containo.us
-  #   resources:
-  #     - ingressroutes
-  #   verbs:
-  #     - get
-  #     - list
   - apiGroups:
       - metrics.k8s.io
     resources:
@@ -81,7 +74,6 @@ metadata:
   namespace: homepage
   labels:
     app.kubernetes.io/name: homepage
-  annotations:
 spec:
   type: ClusterIP
   ports:
@@ -118,16 +110,20 @@ spec:
       enableServiceLinks: true
       containers:
         - name: homepage
-          image: "ghcr.io/gethomepage/homepage:latest"
-          imagePullPolicy: Always
+          image: "ghcr.io/gethomepage/homepage:v1.12.3"
+          imagePullPolicy: IfNotPresent
           ports:
             - name: http
               containerPort: 3000
               protocol: TCP
-
           env:
             - name: HOMEPAGE_ALLOWED_HOSTS
               value: homepage.internal.locthp.com
+          envFrom:
+            # HOMEPAGE_VAR_* secrets used for {{HOMEPAGE_VAR_…}} substitution
+            # in services.yaml. Provisioned from secret.enc.yaml via KSOPS.
+            - secretRef:
+                name: homepage-secrets
           volumeMounts:
             - mountPath: /app/config/custom.js
               name: homepage-config
@@ -175,16 +171,14 @@ metadata:
     gethomepage.dev/group: Cluster Management
     gethomepage.dev/icon: homepage.png
     gethomepage.dev/name: Homepage
-    nginx.org/redirect-to-https: 'True'
     cert-manager.io/cluster-issuer: letsencrypt-prod
-    external-dns.alpha.kubernetes.io/target: "172.16.1.199"
     external-dns.alpha.kubernetes.io/hostname: "homepage.internal.locthp.com"
 spec:
-  ingressClassName: nginx
+  ingressClassName: cilium
   tls:
-  - hosts:
-    - homepage.internal.locthp.com
-    secretName: homepage-certificate
+    - hosts:
+        - homepage.internal.locthp.com
+      secretName: homepage-certificate
   rules:
     - host: "homepage.internal.locthp.com"
       http:

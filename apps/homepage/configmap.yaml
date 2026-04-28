@@ -1,0 +1,249 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: homepage
+  namespace: homepage
+  labels:
+    app.kubernetes.io/name: homepage
+data:
+  bookmarks.yaml: |
+    - Developer:
+        - Github:
+            - abbr: Loc's Github
+              href: https://github.com/truonghoangphuloc
+
+  custom.css: |
+    .service-name {
+        text-align: center !important;
+        #font-size: large !important;
+        padding-right: 50px !important;
+    }
+    .service-name p {
+        font-size: small !important;
+    }
+    .text-right {
+        margin: 0 auto !important;
+    }
+
+  custom.js: ""
+
+  docker.yaml: ""
+
+  kubernetes.yaml: |
+    mode: cluster
+
+  # Sensitive widget credentials are referenced as {{HOMEPAGE_VAR_*}} and
+  # substituted at runtime by the homepage container from the
+  # `homepage-secrets` Secret (envFrom on the Deployment).
+  # Add a new var? Update both `secret.enc.yaml` and the reference here.
+  services.yaml: |
+    - Networking:
+        - Firewall:
+            icon: opnsense.png
+            href: http://172.16.1.1/
+            description: Opensese Firewall
+            ping: 172.16.1.1
+            widget:
+              type: opnsense
+              url: http://172.16.1.1
+              username: "{{HOMEPAGE_VAR_OPNSENSE_USERNAME}}"
+              password: "{{HOMEPAGE_VAR_OPNSENSE_PASSWORD}}"
+
+        - Pihole Master:
+            icon: pi-hole.png
+            href: http://172.16.1.5/admin
+            description: Pihole Resolver
+            ping: 172.16.1.5
+            widget:
+              type: pihole
+              url: http://172.16.1.5/admin/api.php?summaryRaw&auth=
+              key: "{{HOMEPAGE_VAR_PIHOLE_MASTER_KEY}}"
+
+        - Pihole Slave:
+            icon: pi-hole.png
+            href: http://172.16.1.6/admin
+            description: Pihole Resolver
+            ping: 172.16.1.6
+            widget:
+              type: pihole
+              url: http://172.16.1.6/admin/api.php?summaryRaw&auth=
+              key: "{{HOMEPAGE_VAR_PIHOLE_SLAVE_KEY}}"
+
+    - Infrastructure:
+        - Proxmox-intelnuc-01:
+            href: https://172.16.1.250:8006/
+            description: PVE virtualization platform
+            icon: proxmox.png
+            ping: 172.16.1.250
+            widget:
+              type: proxmox
+              url: https://172.16.1.250:8006
+              username: "{{HOMEPAGE_VAR_PROXMOX_USERNAME}}"
+              password: "{{HOMEPAGE_VAR_PROXMOX_INTELNUC01_PASSWORD}}"
+              node: "intelnuc-01"
+
+        - Proxmox-hp-02:
+            href: https://172.16.1.251:8006/
+            description: PVE virtualization platform
+            icon: proxmox.png
+            ping: 172.16.1.251
+            widget:
+              type: proxmox
+              url: https://172.16.1.251:8006
+              username: "{{HOMEPAGE_VAR_PROXMOX_USERNAME}}"
+              password: "{{HOMEPAGE_VAR_PROXMOX_HP02_PASSWORD}}"
+              node: "hp-02"
+
+        - Proxmox-dell-03:
+            href: https://172.16.1.252:8006/
+            icon: proxmox.png
+            description: PVE virtualization platform
+            ping: 172.16.1.252
+            widget:
+              type: proxmox
+              url: https://172.16.1.252:8006
+              username: "{{HOMEPAGE_VAR_PROXMOX_USERNAME}}"
+              password: "{{HOMEPAGE_VAR_PROXMOX_DELL03_PASSWORD}}"
+              node: "dell-03"
+
+        - Proxmox-geekom-dev:
+            href: https://172.16.1.253:8006/
+            icon: proxmox.png
+            description: PVE virtualization platform
+            ping: 172.16.1.253
+            widget:
+              type: proxmox
+              url: https://172.16.1.253:8006
+              username: "{{HOMEPAGE_VAR_PROXMOX_USERNAME}}"
+              password: "{{HOMEPAGE_VAR_PROXMOX_GEEKOMDEV_PASSWORD}}"
+
+    - Kubernetes Clusters:
+        - Kubeadm Cluster:
+            icon: kubernetes.png
+            siteMonitor: https://k8s-api-server.internal.locthp.com:6443/
+            description: Prod Cluster
+            widget:
+              type: customapi
+              url: https://k8s-api-server.internal.locthp.com:6443/version
+              method: GET
+              mappings:
+                - field: gitVersion
+                  label: Version
+
+    - Monitoring:
+        - Grafana:
+            icon: grafana.svg
+            href: https://grafana.prod-cluster.internal.locthp.com/
+            siteMonitor: https://grafana.prod-cluster.internal.locthp.com/
+            description: Cluster-internal Grafana Dashboard
+            widget:
+              type: grafana
+              url: https://grafana.prod-cluster.internal.locthp.com
+              username: "{{HOMEPAGE_VAR_GRAFANA_USERNAME}}"
+              password: "{{HOMEPAGE_VAR_GRAFANA_PASSWORD}}"
+
+        - Prometheus:
+            icon: prometheus.svg
+            href: https://prometheus.prod-cluster.internal.locthp.com/
+            siteMonitor: https://prometheus.prod-cluster.internal.locthp.com/
+            description: Cluster-internal Prometheus Source
+            widget:
+              type: prometheus
+              url: https://prometheus.prod-cluster.internal.locthp.com
+
+        - Central Grafana:
+            icon: grafana.svg
+            href: https://grafana.central-monitoring.internal.locthp.com
+            siteMonitor: https://grafana.central-monitoring.internal.locthp.com
+            description: Central-Monitoring Grafana Dashboard
+            widget:
+              type: grafana
+              url: https://grafana.central-monitoring.internal.locthp.com
+              username: "{{HOMEPAGE_VAR_GRAFANA_USERNAME}}"
+              password: "{{HOMEPAGE_VAR_GRAFANA_PASSWORD}}"
+
+        - Central Prometheus:
+            icon: prometheus.svg
+            href: https://prometheus.central-monitoring.internal.locthp.com/
+            siteMonitor: https://prometheus.central-monitoring.internal.locthp.com/
+            description: Central-Monitoring Prometheus Source
+            widget:
+              type: prometheus
+              url: https://prometheus.central-monitoring.internal.locthp.com
+
+    - Dashboard:
+        - PMM Dashboard:
+            icon: https://mysql-monitoring.prod-cluster.internal.locthp.com/graph/public/img/pmm-app-rounded-icon.svg
+            href: https://mysql-monitoring.prod-cluster.internal.locthp.com/
+            siteMonitor: https://monitoring-service.pmm-mysql-monitoring.svc.cluster.local/
+            description: Percona Monitoring and Management
+
+        - Longhorn Dashboard:
+            icon: longhorn.svg
+            href: https://longhorn.internal.locthp.com/
+            siteMonitor: https://longhorn.prod-cluster.internal.locthp.com/
+            description: Cloud-Native distributed storage built on and for Kubernetes
+
+        - Administrative Mail Dashboard:
+            icon: gmail.svg
+            href: https://mail.internal.locthp.com/
+            siteMonitor: https://mail.internal.locthp.com/
+            description: Self-Hosted Mailbox
+
+    - Automation:
+        - SemaphoreUI:
+            icon: ansible.svg
+            href: https://semaphore.internal.locthp.com/
+            siteMonitor: https://semaphore.internal.locthp.com
+            description: SemaphoreUI
+
+        - Jenkins:
+            icon: jenkins.svg
+            href: https://jenkins.locthp.com/
+            siteMonitor: https://jenkins.internal.locthp.com
+            description: Jenkins
+
+  settings.yaml: |
+    theme: dark
+    title: LocTruong's Homepage
+    layout:
+      Networking:
+        style: row
+        columns: 3
+      Infrastructure:
+        style: row
+        columns: 4
+      Kubernetes Clusters:
+        style: row
+      Monitoring:
+        style: row
+        columns: 4
+      Dashboard:
+        style: row
+        columns: 3
+      Automation:
+        style: row
+        columns: 2
+
+  widgets.yaml: |
+    - kubernetes:
+        cluster:
+          show: false
+          cpu: true
+          memory: true
+          showLabel: true
+          label: "cluster"
+        nodes:
+          show: false
+          cpu: true
+          memory: true
+          showLabel: true
+
+    - search:
+        provider: google
+        target: _blank
+
+    - datetime:
+        text_size: xl
+        format:
+          timeStyle: short

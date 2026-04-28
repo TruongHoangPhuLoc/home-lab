@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Raw-manifest pattern (NOT Kustomize-wraps-Helm).
+# gethomepage/homepage has no official helm chart, so we ship the manifests
+# directly and use ksops for the encrypted Secret. See apps/CLAUDE.md.
+
+resources:
+  - manifests.yaml
+  - configmap.yaml
+
+generators:
+  - ./ksops.yaml

@@ -1,6 +1,6 @@
 # platform/CLAUDE.md
 
-Rules for everything under `platform/`. Read this *in addition to* the root [`CLAUDE.md`](../CLAUDE.md) when adding or modifying components in this subtree.
+Rules for everything under `platform/`. Read this *in addition to* the root [`CLAUDE.md`](../CLAUDE.md) when adding or modifying components in this subtree. End-user workloads live in [`apps/`](../apps/) and follow [`apps/CLAUDE.md`](../apps/CLAUDE.md) — the patterns described here apply there too.
 
 ## Invariant
 
@@ -200,7 +200,7 @@ helm --kube-context home-cluster upgrade rook-ceph-cluster rook-release/rook-cep
   -f platform/storage/rook-ceph/cluster/values.yaml
 ```
 
-**Order of operations when we migrate:** stateless apps first (external-dns, loki, promtail, homepage, cert-manager, traefik, kube-prometheus-stack) — THEN rook-ceph, by user direction.
+**Order of operations when we migrate:** stateless apps first (external-dns, loki, promtail, homepage [done — see [`apps/homepage/`](../apps/homepage/)], cert-manager, traefik, kube-prometheus-stack) — THEN rook-ceph, by user direction.
 
 ## Common `ignoreDifferences` patterns
 

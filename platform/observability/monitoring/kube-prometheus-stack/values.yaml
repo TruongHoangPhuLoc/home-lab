@@ -1,0 +1,103 @@
+# kube-prometheus-stack helm overrides.
+# Pinned chart: kube-prometheus-stack 82.16.2 from https://prometheus-community.github.io/helm-charts.
+# Migrated from helm release 2026-04-28 - changed ingressClassName from traefik to cilium.
+
+alertmanager:
+  alertmanagerSpec:
+    storage:
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: 5Gi
+          storageClassName: ceph-block
+  ingress:
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      external-dns.alpha.kubernetes.io/hostname: alertmanager.prod-cluster.internal.locthp.com
+    enabled: true
+    hosts:
+    - alertmanager.prod-cluster.internal.locthp.com
+    ingressClassName: cilium
+    tls:
+    - hosts:
+      - alertmanager.prod-cluster.internal.locthp.com
+      secretName: alertmanager-certificate
+
+grafana:
+  admin:
+    # Credentials sourced from SOPS-encrypted Secret via secret.enc.yaml
+    existingSecret: grafana-creds
+    passwordKey: admin-password
+    userKey: admin-user
+  ingress:
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      external-dns.alpha.kubernetes.io/hostname: grafana.prod-cluster.internal.locthp.com
+    enabled: true
+    hosts:
+    - grafana.prod-cluster.internal.locthp.com
+    ingressClassName: cilium
+    tls:
+    - hosts:
+      - grafana.prod-cluster.internal.locthp.com
+      secretName: grafana-certificate
+  persistence:
+    accessModes:
+    - ReadWriteOnce
+    enabled: true
+    finalizers:
+    - kubernetes.io/pvc-protection
+    size: 5Gi
+    storageClassName: ceph-block
+    type: sts
+
+kubeEtcd:
+  enabled: true
+  service:
+    enabled: true
+    port: 2379
+    targetPort: 2379
+  serviceMonitor:
+    # etcd client certificates sourced from SOPS-encrypted Secret via secret.enc.yaml
+    caFile: /etc/prometheus/secrets/etcd-client-certs/etcd-ca
+    certFile: /etc/prometheus/secrets/etcd-client-certs/etcd-client
+    enabled: true
+    insecureSkipVerify: false
+    keyFile: /etc/prometheus/secrets/etcd-client-certs/etcd-client-key
+    scheme: https
+    serverName: localhost
+
+prometheus:
+  ingress:
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      external-dns.alpha.kubernetes.io/hostname: prometheus.prod-cluster.internal.locthp.com
+    enabled: true
+    hosts:
+    - prometheus.prod-cluster.internal.locthp.com
+    ingressClassName: cilium
+    tls:
+    - hosts:
+      - prometheus.prod-cluster.internal.locthp.com
+      secretName: prometheus-certificate
+  prometheusSpec:
+    retention: 15d
+    secrets:
+    - etcd-client-certs
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: 50Gi
+          storageClassName: ceph-block
+
+prometheus-node-exporter:
+  extraArgs:
+  - --collector.filesystem.mount-points-exclude=^/(dev|proc|sys|var/lib/docker/.+|var/lib/kubelet/.+)($|/)
+  - --collector.filesystem.fs-types-exclude=^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|iso9660|mqueue|nsfs|overlay|proc|procfs|pstore|rpc_pipefs|securityfs|selinuxfs|squashfs|sysfs|tracefs)$

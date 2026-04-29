@@ -190,6 +190,21 @@ helm --kube-context home-cluster upgrade cilium cilium/cilium \
 
 **Never:** don't create an `application.yaml` here. If you think cilium should become ArgoCD-managed, this is a big architectural decision — raise it as its own discussion, don't slip it in.
 
+### `platform/argocd/` (Argo CD Helm release)
+
+**Why:** The Argo CD control plane must exist before it can reconcile Applications. Self-management via an Argo CD Application is possible but adds bootstrap complexity; today the release is Helm-driven with git-tracked overrides.
+
+**How it's run:**
+```bash
+helm upgrade argocd argo-cd \
+  --repo https://argoproj.github.io/argo-helm \
+  --version 9.5.4 \
+  -n argocd \
+  -f platform/argocd/helm-values.yaml
+```
+
+**Overrides:** [`platform/argocd/helm-values.yaml`](./argocd/helm-values.yaml) — includes `repoServer` / `server` resource **requests** on every container in those pods (required for HPA CPU/memory metrics) and `applicationSet.httpRoute.enabled: false` for chart compatibility.
+
 ### `platform/storage/rook-ceph/`
 
 **Why (current state):** Deferred. Storage outage cascades across every PV-using workload (prometheus, loki, minio, TLS certs, …). When we do migrate, it requires very conservative ArgoCD settings (never auto-prune, never auto-self-heal, `ignoreDifferences` for operator-managed fields, `Delete=false` sync option on the `CephCluster`). See the `project_rook_ceph_argocd_plan` memory for the complete plan when it's time.

@@ -4,6 +4,20 @@ Secret management in this repo uses [SOPS](https://github.com/getsops/sops) with
 
 Configuration lives in [`/.sops.yaml`](../../.sops.yaml) at the repo root.
 
+## Argo CD Helm overrides
+
+The Argo CD release itself is installed with Helm. User-supplied values are committed as [`helm-values.yaml`](./helm-values.yaml). After editing that file, apply with:
+
+```bash
+helm upgrade argocd argo-cd \
+  --repo https://argoproj.github.io/argo-helm \
+  --version 9.5.4 \
+  -n argocd \
+  -f platform/argocd/helm-values.yaml
+```
+
+Pin `--version` to the chart revision shown by `helm list -n argocd` when you upgrade across chart bumps. Resource **requests** on `repo-server`, `ksops`, and `server` containers are required so the built-in HPAs can compute CPU/memory utilization (otherwise metrics stay `<unknown>` and scaling never activates).
+
 ## Keys
 
 ### Public key (safe to commit)

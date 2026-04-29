@@ -1,0 +1,126 @@
+applicationSet:
+  replicas: 2
+  # Required by argo-cd chart templates when upgrading with user-supplied values only.
+  httpRoute:
+    enabled: false
+configs:
+  params:
+    server.insecure: true
+controller:
+  replicas: 1
+extraObjects:
+- apiVersion: v1
+  data:
+    plugin.yaml: |
+      apiVersion: argoproj.io/v1alpha1
+      kind: ConfigManagementPlugin
+      metadata:
+        name: ksops
+      spec:
+        allowConcurrency: true
+        generate:
+          command: ["sh", "-c"]
+          args: ["PATH=/helm-tools:$PATH kustomize build --enable-alpha-plugins --enable-exec --enable-helm ."]
+        discover:
+          fileName: "./kustomization.yaml"
+        lockRepo: false
+  kind: ConfigMap
+  metadata:
+    name: ksops-cmp-plugin
+    namespace: argocd
+global:
+  domain: argocd.prod-cluster.internal.locthp.com
+redis-ha:
+  enabled: true
+repoServer:
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+  extraContainers:
+  - command:
+    - /var/run/argocd/argocd-cmp-server
+    env:
+    - name: SOPS_AGE_KEY_FILE
+      value: /keys/keys.txt
+    - name: HELM_CACHE_HOME
+      value: /tmp/helm-cache
+    - name: HELM_CONFIG_HOME
+      value: /tmp/helm-config
+    - name: HELM_DATA_HOME
+      value: /tmp/helm-data
+    image: viaductoss/ksops:v4.3.3
+    imagePullPolicy: IfNotPresent
+    name: ksops
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 999
+    volumeMounts:
+    - mountPath: /var/run/argocd
+      name: var-files
+    - mountPath: /home/argocd/cmp-server/plugins
+      name: plugins
+    - mountPath: /tmp
+      name: tmp
+    - mountPath: /keys
+      name: sops-age
+      readOnly: true
+    - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+      name: cmp-plugin
+      subPath: plugin.yaml
+    - mountPath: /helm-tools
+      name: helm-tools
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: "2"
+        memory: 2Gi
+  initContainers:
+  - args:
+    - cp /usr/bin/helm /helm-tools/helm && chmod +x /helm-tools/helm
+    command:
+    - sh
+    - -c
+    image: alpine/helm:3.16.2
+    name: install-helm
+    volumeMounts:
+    - mountPath: /helm-tools
+      name: helm-tools
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 2Gi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+  volumes:
+  - name: sops-age
+    secret:
+      secretName: sops-age
+  - configMap:
+      name: ksops-cmp-plugin
+    name: cmp-plugin
+  - emptyDir: {}
+    name: helm-tools
+server:
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+  resources:
+    requests:
+      cpu: 250m
+      memory: 256Mi
+    limits:
+      cpu: "1"
+      memory: 1Gi
+  ingress:
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      external-dns.alpha.kubernetes.io/hostname: argocd.prod-cluster.internal.locthp.com
+    enabled: true
+    extraTls:
+    - hosts:
+      - argocd.prod-cluster.internal.locthp.com
+      secretName: argocd-server-tls
+    ingressClassName: cilium

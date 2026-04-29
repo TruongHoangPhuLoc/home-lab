@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: traefik
+
+resources:
+- https://helm-charts.traefik.io/traefik/traefik-39.0.7.tgz
+
+helmCharts:
+- name: traefik
+  repo: https://helm-charts.traefik.io/traefik
+  version: 39.0.7
+  releaseName: traefik
+  namespace: traefik
+  valuesFile: values.yaml
+
+generators:
+- ksops.yaml

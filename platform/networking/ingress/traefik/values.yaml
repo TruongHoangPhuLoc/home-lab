@@ -1,0 +1,130 @@
+# Traefik Helm chart configuration
+# Non-sensitive overrides for the traefik chart
+
+api:
+  dashboard: true
+  insecure: false
+
+# Gateway API configuration
+gateway:
+  listeners:
+    web:
+      namespacePolicy:
+        from: All
+      port: 8000
+      protocol: HTTP
+    websecure:
+      certificateRefs:
+      - group: ""
+        kind: Secret
+        name: traefik-default-tls
+      mode: Terminate
+      namespacePolicy:
+        from: All
+      port: 8443
+      protocol: HTTPS
+
+# Ingress configuration
+ingressClass:
+  enabled: true
+  isDefaultClass: true
+
+# Dashboard routing with external-dns annotation
+ingressRoute:
+  dashboard:
+    annotations:
+      external-dns.alpha.kubernetes.io/target: 172.16.180.1
+    enabled: true
+    entryPoints:
+    - websecure
+    matchRule: Host(`traefik.prod-cluster.internal.locthp.com`)
+    middlewares:
+    - name: dashboard-auth
+    tls:
+      secretName: traefik-dashboard-tls
+
+# Logging configuration
+logs:
+  access:
+    enabled: true
+  general:
+    level: INFO
+
+# Prometheus metrics
+metrics:
+  prometheus:
+    enabled: true
+
+# Port configuration with HTTPS redirect and ProxyProtocol
+ports:
+  web:
+    exposedPort: 80
+    http:
+      redirections:
+        entryPoint:
+          permanent: true
+          scheme: https
+          to: websecure
+    port: 8000
+    proxyProtocol:
+      trustedIPs:
+      - 10.0.0.0/8
+      - 172.16.0.0/12
+      - 192.168.0.0/16
+  websecure:
+    exposedPort: 443
+    port: 8443
+    proxyProtocol:
+      trustedIPs:
+      - 10.0.0.0/8
+      - 172.16.0.0/12
+      - 192.168.0.0/16
+
+# Provider configuration
+providers:
+  kubernetesGateway:
+    enabled: true
+  kubernetesIngress:
+    enabled: true
+
+# Service configuration
+service:
+  type: LoadBalancer
+
+# Extra objects for dashboard auth, certificates, etc.
+# Note: Sensitive auth secret moved to secret.enc.yaml
+extraObjects:
+# Dashboard authentication middleware (references secret from SOPS)
+- apiVersion: traefik.io/v1alpha1
+  kind: Middleware
+  metadata:
+    name: dashboard-auth
+  spec:
+    basicAuth:
+      secret: dashboard-auth-secret
+
+# TLS certificates for dashboard and wildcard
+- apiVersion: cert-manager.io/v1
+  kind: Certificate
+  metadata:
+    name: traefik-dashboard-cert
+  spec:
+    dnsNames:
+    - traefik.prod-cluster.internal.locthp.com
+    issuerRef:
+      kind: ClusterIssuer
+      name: letsencrypt-prod
+    secretName: traefik-dashboard-tls
+
+- apiVersion: cert-manager.io/v1
+  kind: Certificate
+  metadata:
+    name: traefik-default-cert
+  spec:
+    dnsNames:
+    - '*.internal.locthp.com'
+    - '*.prod-cluster.internal.locthp.com'
+    issuerRef:
+      kind: ClusterIssuer
+      name: letsencrypt-prod
+    secretName: traefik-default-tls

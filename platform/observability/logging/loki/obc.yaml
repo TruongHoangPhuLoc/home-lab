@@ -1,0 +1,21 @@
+# ObjectBucketClaim — single bucket for all Loki storage (chunks, index, rules).
+#
+# Loki uses path-prefix isolation internally (chunks under /fake/<tenant>/,
+# index under /loki_index_*/, rules under /rules/<tenant>/), so one bucket is
+# safe and avoids the "OBC creates one user per bucket" mismatch with Loki's
+# single S3 client config. See ARCHITECTURE.md → "Why one bucket, not three."
+#
+# When this OBC binds, the rook bucket provisioner emits in this namespace:
+#   - Secret/loki-storage     → AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
+#   - ConfigMap/loki-storage  → BUCKET_HOST, BUCKET_PORT, BUCKET_NAME, BUCKET_REGION
+#
+# Loki pods consume both via global.extraEnvFrom in values.yaml, and use
+# `-config.expand-env=true` to interpolate ${BUCKET_NAME} into bucketnames.
+apiVersion: objectbucket.io/v1alpha1
+kind: ObjectBucketClaim
+metadata:
+  name: loki-storage
+  namespace: logging
+spec:
+  generateBucketName: loki-storage
+  storageClassName: ceph-bucket

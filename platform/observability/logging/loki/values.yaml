@@ -1,0 +1,118 @@
+# Loki helm overrides.
+# Pinned chart: loki 9.5.10 from https://grafana-community.github.io/helm-charts.
+#
+# Storage backend: Ceph RGW via the rook bucket provisioner.
+# Credentials + bucket name are injected at runtime from the OBC-emitted
+# Secret + ConfigMap (loki-storage). Nothing sensitive lives in this file.
+
+deploymentMode: Distributed
+
+# Disable bundled MinIO — replaced by Ceph RGW.
+minio:
+  enabled: false
+
+# Inject AWS credentials + BUCKET_NAME/HOST/PORT into every loki component.
+# Combined with `-config.expand-env=true` below, this lets values reference
+# ${BUCKET_NAME} and have it resolved at process start.
+global:
+  extraArgs:
+    - "-config.expand-env=true"
+  extraEnvFrom:
+    - secretRef:
+        name: loki-storage
+    - configMapRef:
+        name: loki-storage
+
+loki:
+  compactor:
+    compaction_interval: 10m
+    delete_request_store: s3
+    retention_delete_delay: 2h
+    retention_enabled: true
+  ingester:
+    chunk_encoding: snappy
+  limits_config:
+    retention_period: 7d
+  querier:
+    max_concurrent: 4
+  schemaConfig:
+    configs:
+      - from: "2024-04-01"
+        index:
+          period: 24h
+          prefix: loki_index_
+        object_store: s3
+        schema: v13
+        store: tsdb
+  storage:
+    type: s3
+    bucketNames:
+      chunks: ${BUCKET_NAME}
+      ruler: ${BUCKET_NAME}
+      admin: ${BUCKET_NAME}
+    s3:
+      endpoint: rook-ceph-rgw-ceph-objectstore.rook-ceph.svc:80
+      region: us-east-1
+      s3ForcePathStyle: true
+      insecure: true
+  tracing:
+    enabled: true
+
+# Distributed-mode replica counts (matching the previous in-cluster shape).
+backend:
+  replicas: 0
+read:
+  replicas: 0
+write:
+  replicas: 0
+singleBinary:
+  replicas: 0
+bloomBuilder:
+  replicas: 0
+bloomGateway:
+  replicas: 0
+bloomPlanner:
+  replicas: 0
+
+distributor:
+  replicas: 3
+  maxUnavailable: 2
+ingester:
+  replicas: 3
+  zoneAwareReplication:
+    enabled: false
+querier:
+  replicas: 3
+  maxUnavailable: 2
+queryFrontend:
+  replicas: 2
+  maxUnavailable: 1
+queryScheduler:
+  replicas: 2
+indexGateway:
+  replicas: 2
+  maxUnavailable: 1
+compactor:
+  replicas: 1
+
+chunksCache:
+  enabled: true
+  allocatedMemory: 2048
+
+# Public gateway (nginx) — fronts query/push API behind the cilium Ingress.
+gateway:
+  ingress:
+    enabled: true
+    ingressClassName: cilium
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      external-dns.alpha.kubernetes.io/hostname: gateway-loki.prod-cluster.internal.locthp.com
+    hosts:
+      - host: gateway-loki.prod-cluster.internal.locthp.com
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - hosts:
+          - gateway-loki.prod-cluster.internal.locthp.com
+        secretName: loki-gateway-tls

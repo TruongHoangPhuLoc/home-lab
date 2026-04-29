@@ -19,3 +19,8 @@ __pycache__/
 
 # IDE
 .vscode/
+
+# Helm chart caches written by `kubectl kustomize --enable-helm` next to a
+# kustomization.yaml that uses helmCharts. Re-pulled at render time; never
+# committed. (No-vendored-charts rule — see CLAUDE.md.)
+**/charts/

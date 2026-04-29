@@ -9,12 +9,14 @@ Configuration lives in [`/.sops.yaml`](../../.sops.yaml) at the repo root.
 The Argo CD release itself is installed with Helm. User-supplied values are committed as [`helm-values.yaml`](./helm-values.yaml). After editing that file, apply with:
 
 ```bash
-helm upgrade argocd argo-cd \
+helm upgrade --install argocd argo-cd \
   --repo https://argoproj.github.io/argo-helm \
   --version 9.5.4 \
   -n argocd \
   -f platform/argocd/helm-values.yaml
 ```
+
+**Syntax:** `helm upgrade --install <release-name> <chart>` — release is `argocd`, chart is **`argo-cd`** (with a hyphen). It is not `argo/argocd` (wrong chart name). Equivalent after `helm repo add argo https://argoproj.github.io/argo-helm && helm repo update`: `helm upgrade --install argocd argo/argo-cd …` (repo alias `argo`, chart **`argo-cd`**).
 
 Pin `--version` to the chart revision shown by `helm list -n argocd` when you upgrade across chart bumps. Resource **requests** on `repo-server`, `ksops`, and `server` containers are required so the built-in HPAs can compute CPU/memory utilization (otherwise metrics stay `<unknown>` and scaling never activates).
 

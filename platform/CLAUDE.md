@@ -196,12 +196,14 @@ helm --kube-context home-cluster upgrade cilium cilium/cilium \
 
 **How it's run:**
 ```bash
-helm upgrade argocd argo-cd \
+helm upgrade --install argocd argo-cd \
   --repo https://argoproj.github.io/argo-helm \
   --version 9.5.4 \
   -n argocd \
   -f platform/argocd/helm-values.yaml
 ```
+
+Chart name is **`argo-cd`**, not `argo/argocd`. `--install` is the long form of `-i` (install if the release does not exist).
 
 **Overrides:** [`platform/argocd/helm-values.yaml`](./argocd/helm-values.yaml) — includes `repoServer` / `server` resource **requests** on every container in those pods (required for HPA CPU/memory metrics) and `applicationSet.httpRoute.enabled: false` for chart compatibility.
 

@@ -19,7 +19,7 @@ spec:
   syncPolicy:
     automated:
       prune: true
-      selfHeal: true     # during adoption; flip to true in a SEPARATE commit after stable
+      selfHeal: true
     syncOptions:
       - ServerSideApply=true
       - CreateNamespace=false

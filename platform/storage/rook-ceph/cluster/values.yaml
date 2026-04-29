@@ -1,0 +1,138 @@
+# rook-ceph-cluster helm overrides.
+# Pinned chart: rook-ceph-cluster v1.19.3 from https://charts.rook.io/release.
+#
+# Lifecycle (helm-managed exception, NOT ArgoCD):
+#   helm --kube-context home-cluster upgrade --install rook-ceph-cluster rook-ceph-cluster \
+#     --repo https://charts.rook.io/release \
+#     --version v1.19.3 \
+#     -n rook-ceph \
+#     -f platform/storage/rook-ceph/cluster/values.yaml
+#
+# CephCluster topology: 3 worker nodes × 1 OSD each, all-HDD.
+# Failure domain: host. Replication: size 3 across all replicated pools.
+
+cephClusterSpec:
+  dataDirHostPath: /var/lib/rook
+  crashCollector:
+    disable: false
+  dashboard:
+    enabled: true
+    ssl: false
+  mgr:
+    allowMultiplePerNode: false
+    count: 2
+    modules:
+      - name: pg_autoscaler
+        enabled: true
+  mon:
+    allowMultiplePerNode: false
+    count: 3
+  storage:
+    useAllDevices: true
+    useAllNodes: true
+
+# Lower the mon-data-avail warning threshold; with HDD-only workers this gets
+# noisy at default (15%). 10% still gives plenty of runway.
+configOverride: |
+  [global]
+  mon_data_avail_warn = 10
+
+# RBD block pool — backs the `ceph-block` StorageClass (default).
+# Used by every PVC in the cluster (loki ingesters, prometheus, alertmanager,
+# grafana, etc.).
+cephBlockPools:
+  - name: ceph-blockpool
+    spec:
+      failureDomain: host
+      replicated:
+        size: 3
+    storageClass:
+      enabled: true
+      name: ceph-block
+      isDefault: true
+      reclaimPolicy: Delete
+      allowVolumeExpansion: true
+      volumeBindingMode: Immediate
+      parameters:
+        imageFormat: "2"
+        imageFeatures: layering
+        csi.storage.k8s.io/fstype: ext4
+        csi.storage.k8s.io/provisioner-secret-name: rook-csi-rbd-provisioner
+        csi.storage.k8s.io/provisioner-secret-namespace: rook-ceph
+        csi.storage.k8s.io/controller-expand-secret-name: rook-csi-rbd-provisioner
+        csi.storage.k8s.io/controller-expand-secret-namespace: rook-ceph
+        csi.storage.k8s.io/controller-publish-secret-name: rook-csi-rbd-provisioner
+        csi.storage.k8s.io/controller-publish-secret-namespace: rook-ceph
+        csi.storage.k8s.io/node-stage-secret-name: rook-csi-rbd-node
+        csi.storage.k8s.io/node-stage-secret-namespace: rook-ceph
+
+cephFileSystems: []
+
+# CephObjectStore — RGW (RADOS Gateway), provides S3-compatible API.
+# Provisioned 2026-04-29 to back loki (replacing internal MinIO) and any
+# future workload that wants object storage (terraform state, image registry).
+#
+# Pool sizing rationale (replicated size 3, failureDomain host):
+#   - 3 OSDs across 3 hosts → only safe replicated config matching the block
+#     pool. Erasure coding would force k=2 m=1 (essentially RAID-5 across
+#     hosts), which loses all redundancy after a single host failure during
+#     backfill. See ARCHITECTURE.md for the full reasoning.
+#
+# Gateway config:
+#   - Plain HTTP on port 80 inside the cluster. TLS terminates at the cilium
+#     Ingress (external-dns + cert-manager) when an Ingress is added later.
+#   - Single instance for now; the operator will reschedule if the host fails.
+cephObjectStores:
+  - name: ceph-objectstore
+    spec:
+      metadataPool:
+        failureDomain: host
+        replicated:
+          size: 3
+      dataPool:
+        failureDomain: host
+        replicated:
+          size: 3
+      preservePoolsOnDelete: true
+      gateway:
+        port: 80
+        instances: 1
+        priorityClassName: system-cluster-critical
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: "1"
+            memory: 1Gi
+    # Bucket StorageClass — ObjectBucketClaims referencing this class
+    # auto-create a bucket in this CephObjectStore and emit a Secret +
+    # ConfigMap with credentials/endpoint into the OBC's namespace.
+    storageClass:
+      enabled: true
+      name: ceph-bucket
+      reclaimPolicy: Delete
+      volumeBindingMode: Immediate
+      parameters:
+        region: us-east-1
+
+# Dashboard ingress — keep on traefik for now; will move to cilium when the
+# rest of the platform finishes consolidating.
+ingress:
+  dashboard:
+    enabled: true
+    ingressClassName: traefik
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    host:
+      name: ceph-dashboard.prod-cluster.internal.locthp.com
+      path: /
+    tls:
+      - hosts:
+          - ceph-dashboard.prod-cluster.internal.locthp.com
+        secretName: ceph-dashboard-tls
+
+operatorNamespace: rook-ceph
+
+toolbox:
+  enabled: true

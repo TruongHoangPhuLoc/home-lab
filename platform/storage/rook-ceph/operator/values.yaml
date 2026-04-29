@@ -1,0 +1,13 @@
+# rook-ceph operator helm overrides.
+# Pinned chart: rook-ceph v1.19.3 from https://charts.rook.io/release.
+# Captured from `helm get values rook-ceph -n rook-ceph` on 2026-04-29.
+#
+# Lifecycle (helm-managed exception, NOT ArgoCD):
+#   helm --kube-context home-cluster upgrade --install rook-ceph rook-ceph \
+#     --repo https://charts.rook.io/release \
+#     --version v1.19.3 \
+#     -n rook-ceph \
+#     -f platform/storage/rook-ceph/operator/values.yaml
+
+monitoring:
+  enabled: true

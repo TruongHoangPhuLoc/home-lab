@@ -18,7 +18,8 @@ spec:
     namespace: monitoring
   syncPolicy:
     automated:
-      prune: false
+      prune: true
+      pruneLast: true
       selfHeal: true
     syncOptions:
       - ServerSideApply=true

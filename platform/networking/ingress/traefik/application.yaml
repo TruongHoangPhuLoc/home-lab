@@ -20,7 +20,9 @@ spec:
     server: https://kubernetes.default.svc
     namespace: traefik
   syncPolicy:
-    # Start with manual sync for safety during migration
+    automated:
+      prune: true
+      selfHeal: true
     syncOptions:
     - ServerSideApply=true
     - CreateNamespace=false

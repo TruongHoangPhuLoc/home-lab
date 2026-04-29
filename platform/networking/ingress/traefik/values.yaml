@@ -67,7 +67,15 @@ metrics:
 # - Client IPs would be masked by proxy
 # - ProxyProtocol SHOULD be enabled to preserve original client IPs
 
-# Port configuration with HTTPS redirect
+# ProxyProtocol Configuration
+proxyProtocol:
+  enabled: false  # Set to true when adding proxy/load balancer in front of Traefik
+  trustedIPs:
+  - 10.0.0.0/8       # Private network ranges
+  - 172.16.0.0/12    # Docker/container networks  
+  - 192.168.0.0/16   # Local network ranges
+
+# Port configuration with HTTPS redirect and conditional ProxyProtocol
 ports:
   web:
     exposedPort: 80
@@ -78,24 +86,18 @@ ports:
           scheme: https
           to: websecure
     port: 8000
-    # ProxyProtocol Configuration
-    # Enable when adding proxy/load balancer in front of Traefik
-    # Preserves real client IP addresses when traffic passes through proxy
-    # proxyProtocol:
-    #   trustedIPs:
-    #   - 10.0.0.0/8       # Private network ranges
-    #   - 172.16.0.0/12    # Docker/container networks  
-    #   - 192.168.0.0/16   # Local network ranges
+    {{- if .Values.proxyProtocol.enabled }}
+    proxyProtocol:
+      trustedIPs: {{- .Values.proxyProtocol.trustedIPs | toYaml | nindent 8 }}
+    {{- end }}
     
   websecure:
     exposedPort: 443
     port: 8443
-    # ProxyProtocol Configuration (same as above)
-    # proxyProtocol:
-    #   trustedIPs:
-    #   - 10.0.0.0/8
-    #   - 172.16.0.0/12
-    #   - 192.168.0.0/16
+    {{- if .Values.proxyProtocol.enabled }}
+    proxyProtocol:
+      trustedIPs: {{- .Values.proxyProtocol.trustedIPs | toYaml | nindent 8 }}
+    {{- end }}
 
 # Provider configuration
 providers:

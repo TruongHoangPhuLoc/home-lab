@@ -3,9 +3,6 @@ kind: Kustomization
 
 namespace: traefik
 
-resources:
-- https://helm-charts.traefik.io/traefik/traefik-39.0.7.tgz
-
 helmCharts:
 - name: traefik
   repo: https://helm-charts.traefik.io/traefik

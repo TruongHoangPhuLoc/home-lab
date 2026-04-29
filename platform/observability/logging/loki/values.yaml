@@ -24,6 +24,9 @@ global:
         name: loki-storage
 
 loki:
+  # Single-tenant homelab — disable multi-tenancy auth so promtail can push
+  # without setting X-Scope-OrgID. Chart default flipped to true in 9.5.10.
+  auth_enabled: false
   compactor:
     compaction_interval: 10m
     delete_request_store: s3

@@ -67,15 +67,7 @@ metrics:
 # - Client IPs would be masked by proxy
 # - ProxyProtocol SHOULD be enabled to preserve original client IPs
 
-# ProxyProtocol Configuration
-proxyProtocol:
-  enabled: false  # Set to true when adding proxy/load balancer in front of Traefik
-  trustedIPs:
-  - 10.0.0.0/8       # Private network ranges
-  - 172.16.0.0/12    # Docker/container networks  
-  - 192.168.0.0/16   # Local network ranges
-
-# Port configuration with HTTPS redirect and conditional ProxyProtocol
+# Port configuration with HTTPS redirect
 ports:
   web:
     exposedPort: 80
@@ -86,18 +78,24 @@ ports:
           scheme: https
           to: websecure
     port: 8000
-    {{- if .Values.proxyProtocol.enabled }}
-    proxyProtocol:
-      trustedIPs: {{- .Values.proxyProtocol.trustedIPs | toYaml | nindent 8 }}
-    {{- end }}
+    # proxyProtocol disabled for current BGP architecture
+    # Uncomment when adding proxy/load balancer in front of Traefik:
+    # proxyProtocol:
+    #   trustedIPs:
+    #   - 10.0.0.0/8
+    #   - 172.16.0.0/12
+    #   - 192.168.0.0/16
     
   websecure:
     exposedPort: 443
     port: 8443
-    {{- if .Values.proxyProtocol.enabled }}
-    proxyProtocol:
-      trustedIPs: {{- .Values.proxyProtocol.trustedIPs | toYaml | nindent 8 }}
-    {{- end }}
+    # proxyProtocol disabled for current BGP architecture  
+    # Uncomment when adding proxy/load balancer in front of Traefik:
+    # proxyProtocol:
+    #   trustedIPs:
+    #   - 10.0.0.0/8
+    #   - 172.16.0.0/12
+    #   - 192.168.0.0/16
 
 # Provider configuration
 providers:

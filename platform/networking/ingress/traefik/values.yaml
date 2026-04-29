@@ -55,7 +55,19 @@ metrics:
   prometheus:
     enabled: true
 
-# Port configuration with HTTPS redirect and ProxyProtocol
+# Network Architecture Configuration
+# ================================
+# Current: Direct BGP routing via Cilium BGP to LoadBalancer services
+# - Traffic flow: Client -> Edge Router -> Cilium BGP -> Traefik LoadBalancer
+# - Client IPs are naturally preserved (no proxy in between)
+# - ProxyProtocol is NOT needed and should remain disabled
+#
+# Future: If adding proxy/load balancer in front of Traefik
+# - Traffic flow: Client -> Edge Router -> Proxy/LB -> Traefik
+# - Client IPs would be masked by proxy
+# - ProxyProtocol SHOULD be enabled to preserve original client IPs
+
+# Port configuration with HTTPS redirect
 ports:
   web:
     exposedPort: 80
@@ -66,19 +78,24 @@ ports:
           scheme: https
           to: websecure
     port: 8000
-    proxyProtocol:
-      trustedIPs:
-      - 10.0.0.0/8
-      - 172.16.0.0/12
-      - 192.168.0.0/16
+    # ProxyProtocol Configuration
+    # Enable when adding proxy/load balancer in front of Traefik
+    # Preserves real client IP addresses when traffic passes through proxy
+    # proxyProtocol:
+    #   trustedIPs:
+    #   - 10.0.0.0/8       # Private network ranges
+    #   - 172.16.0.0/12    # Docker/container networks  
+    #   - 192.168.0.0/16   # Local network ranges
+    
   websecure:
     exposedPort: 443
     port: 8443
-    proxyProtocol:
-      trustedIPs:
-      - 10.0.0.0/8
-      - 172.16.0.0/12
-      - 192.168.0.0/16
+    # ProxyProtocol Configuration (same as above)
+    # proxyProtocol:
+    #   trustedIPs:
+    #   - 10.0.0.0/8
+    #   - 172.16.0.0/12
+    #   - 192.168.0.0/16
 
 # Provider configuration
 providers:

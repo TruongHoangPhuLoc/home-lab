@@ -1,5 +1,6 @@
-# Traefik ProxyProtocol Configuration Design
+# Traefik Component Design Document
 
+**Component**: `platform/networking/ingress/traefik`  
 **Date**: 2026-04-29  
 **Status**: Implemented  
 **Context**: Traefik migration to ArgoCD with ProxyProtocol optimization for BGP architecture

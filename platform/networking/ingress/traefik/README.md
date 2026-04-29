@@ -270,8 +270,9 @@ If migrating another Traefik instance:
 7. **Remove Helm**: `helm uninstall traefik -n traefik --keep-history`
 8. **Enable Auto-sync**: Update Application for automated GitOps
 
-## Related Documentation
+## Component Documentation
 
+- **Design Document**: [`DESIGN.md`](./DESIGN.md) - Complete design decisions and architectural reasoning for this component
 - **ArgoCD Architecture**: [`platform/argocd/ARCHITECTURE.md`](../../argocd/ARCHITECTURE.md) - How ArgoCD + KSOPS + Kustomize works
 - **Platform Conventions**: [`platform/CLAUDE.md`](../../CLAUDE.md) - General patterns and adoption workflow
 - **Network Architecture**: Check `infrastructure/` for BGP and Cilium configuration details

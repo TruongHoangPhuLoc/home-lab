@@ -18,8 +18,8 @@ spec:
     namespace: monitoring
   syncPolicy:
     automated:
-      prune: false         # during adoption; flip to true in a SEPARATE commit after stable
-      selfHeal: false      # during adoption; flip to true in a SEPARATE commit after stable
+      prune: true
+      selfHeal: true     # during adoption; flip to true in a SEPARATE commit after stable
     syncOptions:
       - ServerSideApply=true
       - CreateNamespace=false

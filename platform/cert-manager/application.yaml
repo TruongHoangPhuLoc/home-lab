@@ -17,11 +17,9 @@ spec:
     server: https://kubernetes.default.svc
     namespace: cert-manager
   syncPolicy:
-    # Conservative during adoption. Promote to prune+selfHeal=true after
-    # 2-3 clean sync cycles with no unexpected drift.
     automated:
-      prune: false
-      selfHeal: false
+      prune: true
+      selfHeal: true
     syncOptions:
       - ServerSideApply=true
       - CreateNamespace=false

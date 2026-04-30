@@ -1,0 +1,16 @@
+# cert-manager helm overrides.
+# Pinned chart: cert-manager v1.18.2 from https://charts.jetstack.io.
+# Captured from `helm get values cert-manager -n cert-manager` on 2026-04-30.
+
+# Bundle CRDs with the chart so cert-manager owns the lifecycle of its
+# Certificate / Issuer / ClusterIssuer / Order / Challenge CRDs.
+crds:
+  enabled: true
+
+# Default cert-manager DNS resolution uses the cluster DNS (CoreDNS), which
+# in turn forwards to upstream nameservers. For DNS-01 challenges we want
+# to bypass that and ask public resolvers directly — avoids edge cases
+# where the cluster's DNS view of the zone differs from the world's.
+extraArgs:
+  - --dns01-recursive-nameservers-only
+  - --dns01-recursive-nameservers=8.8.8.8:53,1.1.1.1:53

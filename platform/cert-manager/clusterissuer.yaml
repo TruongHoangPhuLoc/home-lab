@@ -1,0 +1,26 @@
+# Production Let's Encrypt issuer using Cloudflare DNS-01.
+#
+# DNS-01 (vs HTTP-01) lets us issue certs for hosts that aren't publicly
+# reachable — most homelab services live behind cilium/traefik on a private
+# LB IP, so HTTP-01 wouldn't work for them.
+#
+# Cloudflare auth: Global API Key via apiKeySecretRef (matches the existing
+# pre-migration setup). Cloudflare also supports scoped API tokens via
+# apiTokenSecretRef — recommended for least-privilege; can swap later.
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    email: truongphuloc030499@gmail.com
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+      - dns01:
+          cloudflare:
+            email: truongphuloc030499@gmail.com
+            apiKeySecretRef:
+              name: cloudflare-api-key-secret
+              key: api-key

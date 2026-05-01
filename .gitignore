@@ -24,3 +24,8 @@ __pycache__/
 # kustomization.yaml that uses helmCharts. Re-pulled at render time; never
 # committed. (No-vendored-charts rule — see CLAUDE.md.)
 **/charts/
+
+# Helm chart caches produced by `helm pull --untar` inside the imperative
+# install scripts under infrastructure/kubernetes/installation/automated/.
+# The script regenerates these on every run.
+infrastructure/kubernetes/installation/automated/add-ons/*/kube-prometheus-stack/

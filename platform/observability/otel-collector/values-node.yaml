@@ -43,7 +43,21 @@ resources:
     memory: 192Mi
     cpu: 75m
 
+# DaemonSet must run on control-plane nodes too so kube-apiserver / etcd /
+# scheduler / controller-manager logs and metrics are collected. The
+# `Exists`-no-key toleration matches every taint on every node.
+tolerations:
+  - operator: Exists
+
 config:
+  receivers:
+    # Kubelet serving certs on this cluster have expired and aren't
+    # auto-rotated; the certs also use hostnames while the receiver
+    # talks to NODE_IP. Skip verification — same posture kube-prom-stack
+    # uses for kubelet endpoints. Cluster-side cert rotation is tracked
+    # separately as cluster hygiene.
+    kubeletstats:
+      insecure_skip_verify: true
   exporters:
     otlphttp/loki:
       endpoint: http://loki-gateway.logging.svc.cluster.local:80/otlp

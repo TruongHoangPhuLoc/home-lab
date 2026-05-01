@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: observability
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: |
+    Observability stack — logs, metrics, traces.
+    Groups loki, kube-prometheus-stack, promtail (B0), otel-collector (B1),
+    hubble exporter (B3), OBI (B4), tempo (B5). See PLAN.md.
+
+  # Permissive during the B0 migration. Tighten clusterResourceWhitelist /
+  # namespaceResourceWhitelist in a follow-up once we know the exact set of
+  # GVKs each component installs.
+  sourceRepos:
+    - '*'
+
+  # The hard guardrail: an Application in this project can only deploy into
+  # `observability` or `kube-system` (Hubble in B3 lives next to cilium).
+  # A misconfigured destination.namespace catches OutOfSync instead of
+  # silently leaking resources elsewhere.
+  destinations:
+    - namespace: observability
+      server: https://kubernetes.default.svc
+    - namespace: kube-system
+      server: https://kubernetes.default.svc
+
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'

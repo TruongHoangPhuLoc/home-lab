@@ -84,6 +84,12 @@ spec:
   selector:
     app.kubernetes.io/name: homepage
 ---
+# readOnlyRootFilesystem deferred: gethomepage's Next.js runtime writes
+# within /app/.next at startup. Locking it down requires explicit emptyDir
+# mounts for /tmp + /app/.next/cache and a production verification pass.
+# Mitigation in place: runAsNonRoot (UID 1000), drop ALL caps,
+# allowPrivilegeEscalation=false, seccomp=RuntimeDefault.
+# trivy:ignore:AVD-KSV-0014
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -138,13 +144,9 @@ spec:
             limits:
               cpu: 500m
               memory: 512Mi
-          # trivy:ignore:KSV0014
-          # readOnlyRootFilesystem deferred: gethomepage's Next.js runtime
-          # writes within /app/.next at startup. Locking it down requires
-          # explicit emptyDir mounts for /tmp + /app/.next/cache and a
-          # production verification pass — out of scope for this commit.
-          # Mitigation in place: runAsNonRoot=true (UID 1000), drop ALL caps,
-          # allowPrivilegeEscalation=false, seccomp=RuntimeDefault.
+          # readOnlyRootFilesystem deferred — see ignore note above the
+          # Deployment apiVersion. Mitigations in place: runAsNonRoot,
+          # drop ALL caps, allowPrivilegeEscalation=false, seccomp.
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:

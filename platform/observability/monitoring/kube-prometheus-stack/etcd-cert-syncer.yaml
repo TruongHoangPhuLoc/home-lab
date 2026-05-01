@@ -48,12 +48,12 @@ subjects:
   namespace: monitoring
 ---
 # One-time Job to bootstrap etcd certificates for initial deployment.
-# trivy:ignore:KSV0118
 # Legitimate root: this Job mounts /etc/kubernetes/pki/etcd/ from the
 # control-plane host (hostPath) to copy etcd client certs into a
 # Secret consumed by Prometheus. Reading those files requires root.
 # Confined: nodeSelector targets control-plane nodes only; tolerations
 # match those taints; container drops back to read-only after the copy.
+# trivy:ignore:AVD-KSV-0118
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -126,13 +126,13 @@ spec:
       - name: tmp-dir
         emptyDir: {}
 ---
-# CronJob to sync etcd certificates from control plane to monitoring namespace
-apiVersion: batch/v1
-# trivy:ignore:KSV0118
+# CronJob to sync etcd certificates from control plane to monitoring namespace.
 # Same legitimate-root rationale as the bootstrap Job above — this CronJob
 # refreshes etcd client certs from /etc/kubernetes/pki/etcd/ on the
 # control-plane host on a schedule. Confined to control-plane nodes by
 # nodeSelector + tolerations.
+# trivy:ignore:AVD-KSV-0118
+apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: etcd-cert-syncer

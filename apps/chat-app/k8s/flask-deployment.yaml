@@ -20,6 +20,13 @@ spec:
       labels:
         app: flask-app
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        fsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
       containers:
       - name: flask-app
         image: locthp/flask_app:dev
@@ -31,6 +38,24 @@ spec:
           value: "socket-application.locthp.com"
         - name: MYSQL_HOST
           value: 172.16.1.244
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 256Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          capabilities:
+            drop: [ALL]
+        volumeMounts:
+          - name: tmp
+            mountPath: /tmp
+      volumes:
+        - name: tmp
+          emptyDir: {}
       # tolerations:
       #     - key: node.kubernetes.io/not-ready
       #       operator: Exists

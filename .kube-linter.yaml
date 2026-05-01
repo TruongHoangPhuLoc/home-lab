@@ -1,0 +1,17 @@
+# kube-linter configuration.
+#
+# Scope: only scan paths that represent live, ArgoCD-managed workloads.
+# Everything under infrastructure/kubernetes/installation/ is bare-metal
+# install reference material (kubeadm bootstrap, vendored chart sources,
+# learning samples) — not the cluster's actual desired state.
+#
+# When the chat-app migrates into apps/ (CLAUDE.md Variant A or B), it'll
+# already be in scope below.
+
+checks:
+  doNotAutoAddDefaults: false
+
+# kube-linter doesn't have a path-include in YAML config — pass directories
+# explicitly via the action `directory:` field instead. This file mostly
+# serves to document what we expect to scan and to allow disabling specific
+# checks if we ever need to (none disabled today).

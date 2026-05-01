@@ -108,6 +108,13 @@ spec:
       automountServiceAccountToken: true
       dnsPolicy: ClusterFirst
       enableServiceLinks: true
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: homepage
           image: "ghcr.io/gethomepage/homepage:v1.12.3"
@@ -124,6 +131,32 @@ spec:
             # in services.yaml. Provisioned from secret.enc.yaml via KSOPS.
             - secretRef:
                 name: homepage-secrets
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+            # NOTE: not setting readOnlyRootFilesystem — gethomepage rebuilds
+            # its Next.js cache and config on startup and writes within /app.
+            # Locked down via runAsNonRoot + drop ALL caps + non-root UID.
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
           volumeMounts:
             - mountPath: /app/config/custom.js
               name: homepage-config

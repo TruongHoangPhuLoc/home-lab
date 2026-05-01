@@ -20,16 +20,6 @@ misconfigurations:
       the SOPS-encrypted secret.enc.yaml at runtime via envFrom. No real
       secret is committed.
 
-  - id: AVD-KSV-0014
-    paths:
-      - "apps/homepage/manifests.yaml"
-    statement: |
-      Deferred. gethomepage's Next.js runtime writes within /app/.next at
-      startup; locking down readOnlyRootFilesystem requires explicit emptyDir
-      mounts (/tmp + /app/.next/cache) and a verification pass. Mitigations
-      in place: runAsNonRoot (UID 1000), drop ALL caps,
-      allowPrivilegeEscalation=false, seccomp=RuntimeDefault.
-
   - id: AVD-KSV-0118
     paths:
       - "platform/observability/monitoring/kube-prometheus-stack/etcd-cert-syncer.yaml"

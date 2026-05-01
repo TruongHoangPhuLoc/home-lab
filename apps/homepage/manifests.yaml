@@ -84,11 +84,6 @@ spec:
   selector:
     app.kubernetes.io/name: homepage
 ---
-# readOnlyRootFilesystem deferred: gethomepage's Next.js runtime writes
-# within /app/.next at startup. Locking it down requires explicit emptyDir
-# mounts for /tmp + /app/.next/cache and a production verification pass.
-# Mitigation in place: runAsNonRoot (UID 1000), drop ALL caps,
-# allowPrivilegeEscalation=false, seccomp=RuntimeDefault.
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -143,11 +138,13 @@ spec:
             limits:
               cpu: 500m
               memory: 512Mi
-          # readOnlyRootFilesystem deferred — see ignore note above the
-          # Deployment apiVersion. Mitigations in place: runAsNonRoot,
-          # drop ALL caps, allowPrivilegeEscalation=false, seccomp.
+          # readOnlyRootFilesystem enabled. Verified via runtime probe that
+          # the only writable path gethomepage actually uses is
+          # /app/config/logs (already mounted as emptyDir below). /tmp is
+          # added as a safety mount per Linux convention.
           securityContext:
             allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
             capabilities:
               drop: [ALL]
           livenessProbe:
@@ -189,11 +186,15 @@ spec:
               subPath: widgets.yaml
             - mountPath: /app/config/logs
               name: logs
+            - mountPath: /tmp
+              name: tmp
       volumes:
         - name: homepage-config
           configMap:
             name: homepage
         - name: logs
+          emptyDir: {}
+        - name: tmp
           emptyDir: {}
 ---
 apiVersion: networking.k8s.io/v1

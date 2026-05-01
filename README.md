@@ -154,10 +154,76 @@ Setup, daily workflow, and recovery procedures: [`platform/argocd/BOOTSTRAP.md`]
 
 ## What's next
 
-- **Rook-Ceph under ArgoCD** — last big migration. Plan worked out in detail; deferred while I let the stateless stack soak.
-- **Terraform state on Ceph S3** — moving `tfstate` off local disk into the in-cluster RGW now that it exists.
-- **Scoped Cloudflare API token** — swap `apiKeySecretRef` (Global API Key) → `apiTokenSecretRef` with `Zone:DNS:Edit` only. Same flow as a key rotation.
-- **CI safety net** — pre-commit SOPS verification + GH Actions running gitleaks / trivy / kube-linter. Documented but not yet wired up.
+The roadmap, in rough priority order. Each milestone has its own design memo in the `~/.claude/.../memory/` notes; what follows is the public-facing summary.
+
+### Observability redesign — promtail → OpenTelemetry (Option B, full pillar)
+
+The current setup ships logs via promtail and metrics via kube-prometheus-stack scrape jobs, with no traces at all. The redesign unifies all three signals through a single OpenTelemetry Collector pipeline: a DaemonSet collects host/container signals; a Deployment "gateway" applies enrichment processors and fans out to backend stores. Loki and Prometheus stay as the storage tier; Tempo joins as a new backend for traces.
+
+```mermaid
+flowchart LR
+    subgraph apps["Workloads"]
+        traefik["Traefik / cilium ingress<br/>(access logs)"]
+        chatapp["chat-app<br/>(future: OTel SDK)"]
+        others["other pods<br/>(stdout/stderr)"]
+    end
+
+    subgraph collectors["OTel Collector tier"]
+        ds["DaemonSet<br/>filelog + kubeletstats +<br/>hostmetrics receivers"]
+        gw["Deployment 'gateway'<br/>OTLP receiver +<br/>enrichment processors +<br/>routing"]
+    end
+
+    iplookup["apps/iplookup/<br/>(custom geo service)"]
+    maxmind[("MaxMind<br/>GeoLite2 DB")]
+
+    subgraph backends["Storage / query tier"]
+        loki["Loki<br/>(on Ceph S3)"]
+        prom["Prometheus<br/>(kube-prom-stack)"]
+        tempo["Tempo<br/>(NEW, on Ceph S3)"]
+    end
+
+    grafana["Grafana<br/>(geomap, service-graph,<br/>logs ↔ traces correlation)"]
+
+    traefik & others -->|stdout / files| ds
+    chatapp -.->|OTLP gRPC<br/>(future)| gw
+    ds -->|OTLP| gw
+
+    gw -->|loki exporter| loki
+    gw -->|prometheusremotewrite| prom
+    gw -->|otlp exporter| tempo
+
+    gw -.->|HTTP enrichment<br/>(custom processor)| iplookup
+    gw -.->|fallback| maxmind
+
+    loki & prom & tempo --> grafana
+
+    style gw fill:#e8d8ff
+    style iplookup fill:#fff3cd
+    style tempo fill:#d4edda
+```
+
+Phases:
+
+- **B0 — add Tempo** as an ArgoCD Application (`platform/observability/tracing/tempo/`). S3 backend reuses the existing Ceph RGW endpoint. Validate with `telemetrygen` before any real traces.
+- **B1 — logs cutover.** New OTel Collector ArgoCD Application at `platform/observability/agents/otel-collector/`. Run *alongside* promtail until Loki shows parity for 2-3 days; then decommission promtail.
+- **B2 — geolocation, MaxMind first.** Enable the upstream `geoip` processor on Traefik access logs. Build the Grafana geomap. Get something working end-to-end even if the data is rough.
+- **B3 — geolocation, custom iplookup processor.** Replace MaxMind with a custom Go processor that calls `apps/iplookup/` for higher-accuracy lookups. Built via OpenTelemetry Collector Builder (`ocb`) into a custom collector image. LRU cache by client IP, fallback to MaxMind on iplookup error so logs never drop. This is the highest-skill-payoff item in the redesign — exercises the OTel SDK / processor model rather than just YAML config.
+- **B4 — metrics shift.** Add OTel `prometheus` receiver to scrape some kube-prom-stack targets. Verify panel parity (OTel-sourced ↔ kube-prom-stack-sourced) before retiring the original scrape jobs. Don't migrate everything at once — keep the rollback option.
+- **B5 — instrument an app.** Pick chat-app, add the OTel SDK for the language, generate real traces. Validate the OTLP ingest path through the gateway Collector to Tempo. Build a Grafana service-graph + span-rate dashboard.
+
+### Security pipeline (layers built up over time)
+
+- **Layers 1–2 — landed.** Pre-commit hook verifies `*.enc.yaml` files are SOPS-encrypted; GitHub Actions runs gitleaks (full history), Trivy IaC config scan, and kube-linter on every push + PR. First run found the expected backlog of vendored chart noise + a few real workload misconfigs (chat-app, homepage).
+- **Layer 3 — Kyverno admission policy.** Install Kyverno as ArgoCD Application; ship policies one at a time (no `:latest` tags, required resource limits, no privileged pods + hostPath, required liveness/readiness probes, then `verifyImages` once images are signed). Pre-req: fix chat-app + homepage securityContext first so admission doesn't reject our own apps.
+- **Layer 4 — supply chain.** `trivy image` scans on Docker builds; cosign sign-then-verify (verify enforced by Layer 3 Kyverno `verifyImages`); syft → grype for SBOM + CVE matching; SLSA provenance via the official GitHub reusable workflow.
+- **Layer 5 — runtime + network detection.** CiliumNetworkPolicy with default-deny per namespace + Hubble UI for flow visibility; Falco DaemonSet shipping syscall events to Loki; Kubernetes audit log to Loki via the same OTel agent. Build Grafana dashboards + Alertmanager rules on top of the Loki streams — Loki + Grafana + Alertmanager IS the SIEM here, deliberately. No separate stack.
+
+### Bigger migrations / loose ends
+
+- **Rook-Ceph under ArgoCD** — last big migration. Safeguards worked out in detail; deferred while the stateless stack soaks.
+- **Terraform state on Ceph S3** — moving `tfstate` off local disk into the in-cluster RGW now that the object store is provisioned.
+- **Scoped Cloudflare API token** — swap `apiKeySecretRef` (Global API Key) → `apiTokenSecretRef` with `Zone:DNS:Edit` only.
+- **filebeat → ES nginx-geolocation pipeline** — historical; replaced end-to-end by the OTel B2/B3 work above. Ingress-nginx is gone; the new geomap dashboard runs on Loki against Traefik access logs.
 
 ## Earlier work / achievements
 

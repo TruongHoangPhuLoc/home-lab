@@ -158,58 +158,33 @@ The roadmap, in rough priority order. Each milestone has its own design memo in 
 
 ### Observability redesign — promtail → OpenTelemetry (Option B, full pillar)
 
-The current setup ships logs via promtail and metrics via kube-prometheus-stack scrape jobs, with no traces at all. The redesign unifies all three signals through a single OpenTelemetry Collector pipeline: a DaemonSet collects host/container signals; a Deployment "gateway" applies enrichment processors and fans out to backend stores. Loki and Prometheus stay as the storage tier; Tempo joins as a new backend for traces.
+The current setup ships logs via promtail and metrics via kube-prometheus-stack scrape jobs, with no traces at all. The redesign unifies all three signals through a single OpenTelemetry Collector pipeline. Loki and Prometheus stay as the storage tier; Tempo joins as the trace backend on the same Ceph S3.
 
 ```mermaid
 flowchart LR
-    subgraph apps["Workloads"]
-        traefik["Traefik / cilium ingress<br/>(access logs)"]
-        chatapp["chat-app<br/>(future: OTel SDK)"]
-        others["other pods<br/>(stdout/stderr)"]
-    end
+    pods["Application pods<br/>logs · metrics · traces"]
 
-    subgraph collectors["OTel Collector tier"]
-        ds["DaemonSet<br/>filelog + kubeletstats +<br/>hostmetrics receivers"]
-        gw["Deployment 'gateway'<br/>OTLP receiver +<br/>enrichment processors +<br/>routing"]
-    end
+    ds["OTel Collector<br/>DaemonSet"]
+    gw["OTel Collector<br/>Gateway"]
 
-    iplookup["apps/iplookup/<br/>(custom geo service)"]
-    maxmind[("MaxMind<br/>GeoLite2 DB")]
+    loki[("Loki")]
+    prom[("Prometheus")]
+    tempo[("Tempo<br/>NEW")]
 
-    subgraph backends["Storage / query tier"]
-        loki["Loki<br/>(on Ceph S3)"]
-        prom["Prometheus<br/>(kube-prom-stack)"]
-        tempo["Tempo<br/>(NEW, on Ceph S3)"]
-    end
+    grafana["Grafana"]
 
-    grafana["Grafana<br/>(geomap, service-graph,<br/>logs ↔ traces correlation)"]
-
-    traefik & others -->|stdout / files| ds
-    chatapp -.->|OTLP gRPC<br/>(future)| gw
+    pods --> ds
+    pods -->|OTLP| gw
     ds -->|OTLP| gw
-
     gw -->|loki exporter| loki
     gw -->|prometheusremotewrite| prom
     gw -->|otlp exporter| tempo
-
-    gw -.->|HTTP enrichment<br/>(custom processor)| iplookup
-    gw -.->|fallback| maxmind
-
-    loki & prom & tempo --> grafana
-
-    style gw fill:#e8d8ff
-    style iplookup fill:#fff3cd
-    style tempo fill:#d4edda
+    loki --> grafana
+    prom --> grafana
+    tempo --> grafana
 ```
 
-Phases:
-
-- **B0 — add Tempo** as an ArgoCD Application (`platform/observability/tracing/tempo/`). S3 backend reuses the existing Ceph RGW endpoint. Validate with `telemetrygen` before any real traces.
-- **B1 — logs cutover.** New OTel Collector ArgoCD Application at `platform/observability/agents/otel-collector/`. Run *alongside* promtail until Loki shows parity for 2-3 days; then decommission promtail.
-- **B2 — geolocation, MaxMind first.** Enable the upstream `geoip` processor on Traefik access logs. Build the Grafana geomap. Get something working end-to-end even if the data is rough.
-- **B3 — geolocation, custom iplookup processor.** Replace MaxMind with a custom Go processor that calls `apps/iplookup/` for higher-accuracy lookups. Built via OpenTelemetry Collector Builder (`ocb`) into a custom collector image. LRU cache by client IP, fallback to MaxMind on iplookup error so logs never drop. This is the highest-skill-payoff item in the redesign — exercises the OTel SDK / processor model rather than just YAML config.
-- **B4 — metrics shift.** Add OTel `prometheus` receiver to scrape some kube-prom-stack targets. Verify panel parity (OTel-sourced ↔ kube-prom-stack-sourced) before retiring the original scrape jobs. Don't migrate everything at once — keep the rollback option.
-- **B5 — instrument an app.** Pick chat-app, add the OTel SDK for the language, generate real traces. Validate the OTLP ingest path through the gateway Collector to Tempo. Build a Grafana service-graph + span-rate dashboard.
+Phasing details (Tempo bootstrap, agent cutover, metrics shift, app instrumentation, geolocation enrichment) are tracked separately and will be designed before they land.
 
 ### Security pipeline (layers built up over time)
 

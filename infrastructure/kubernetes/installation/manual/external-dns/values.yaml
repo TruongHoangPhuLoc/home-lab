@@ -1,8 +1,0 @@
-provider: rfc2136
-rfc2136:
-  host: "dns-bind-server-master.internal.locthp.com"
-  port: 53
-  zone: "internal.locthp.com"
-  tsigKeyname: "tsig-key"
-  tsigSecret: ""
-  tsigSecretAlg: "hmac-sha256"

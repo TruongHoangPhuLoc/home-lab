@@ -1,9 +1,0 @@
-apiVersion: k8s.nginx.org/v1
-kind: Policy
-metadata:
-  name: ingress-mtls-policy
-spec:
-  ingress_MTLS: # invalid/mis-spelled yaml keys
-    clientCertSecret_: ingress-mtls-secret
-    verifyadClient: "on"
-    verifyDeaerpth: 1

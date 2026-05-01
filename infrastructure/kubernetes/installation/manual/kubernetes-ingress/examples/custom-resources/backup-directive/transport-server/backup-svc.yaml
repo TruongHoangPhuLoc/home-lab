@@ -1,7 +1,0 @@
-kind: Service
-apiVersion: v1
-metadata:
-  name: backup-svc-ts
-spec:
-  type: ExternalName
-  externalName: secure-app-backup.external-ns.svc.cluster.local

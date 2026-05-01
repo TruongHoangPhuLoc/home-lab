@@ -1,9 +1,0 @@
-apiVersion: k8s.nginx.org/v1
-kind: GlobalConfiguration
-metadata:
-  name: nginx-configuration
-spec:
-  listeners:
-  - name: udp-server
-    port: 3334
-    protocol: UDP

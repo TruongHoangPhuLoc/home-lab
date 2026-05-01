@@ -1,8 +1,0 @@
-apiVersion: k8s.nginx.org/v1
-kind: Policy
-metadata:
-  name: basic-auth-policy
-spec:
-  basicAuth:
-    realm: Cafe App
-    secret: cafe-passwd

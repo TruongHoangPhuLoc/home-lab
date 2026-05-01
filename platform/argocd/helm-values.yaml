@@ -63,12 +63,17 @@ repoServer:
     # the gRPC envelope agree on the same deadline.
     - name: ARGOCD_EXEC_TIMEOUT
       value: 300s
+    # Reuse the chart-provided `helm-working-dir` emptyDir mounted at
+    # /helm-working-dir (also the default HELM_CACHE_HOME on the
+    # repo-server container itself). Mounting it here keeps the helm cache
+    # in one well-known place and isolates it from /tmp's churny consumers
+    # (KSOPS scratch, kustomize tempfiles).
     - name: HELM_CACHE_HOME
-      value: /helm-cache
+      value: /helm-working-dir
     - name: HELM_CONFIG_HOME
-      value: /helm-cache/config
+      value: /helm-working-dir
     - name: HELM_DATA_HOME
-      value: /helm-cache/data
+      value: /helm-working-dir
     image: viaductoss/ksops:v4.3.3
     imagePullPolicy: IfNotPresent
     name: ksops
@@ -90,12 +95,12 @@ repoServer:
       subPath: plugin.yaml
     - mountPath: /helm-tools
       name: helm-tools
-    # Persistent helm cache. Was on /tmp (emptyDir), so chart pulls happened
-    # on every repo-server pod restart. Dedicated emptyDir lets the cache
-    # survive within a pod's lifetime and avoids competing with /tmp's
-    # other consumers (KSOPS scratch space, kustomize temp files).
-    - mountPath: /helm-cache
-      name: helm-cache
+    # Mount the chart-provided helm-working-dir into the sidecar so the
+    # CMP plugin's `kustomize build --enable-helm` reuses the same helm
+    # cache the repo-server container uses by default. Same emptyDir,
+    # same pod, same lifetime — just shared between containers in the pod.
+    - mountPath: /helm-working-dir
+      name: helm-working-dir
     resources:
       requests:
         cpu: 100m
@@ -130,9 +135,6 @@ repoServer:
     name: cmp-plugin
   - emptyDir: {}
     name: helm-tools
-  # Dedicated emptyDir for HELM_CACHE_HOME — see KSOPS sidecar volumeMounts.
-  - emptyDir: {}
-    name: helm-cache
 server:
   autoscaling:
     enabled: true

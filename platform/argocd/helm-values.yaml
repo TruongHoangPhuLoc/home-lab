@@ -6,6 +6,17 @@ applicationSet:
 configs:
   params:
     server.insecure: true
+    # Bump the controller→repo-server gRPC deadline from 60s default. Under
+    # push-burst load, KSOPS rendering of the kube-prometheus-stack chart
+    # can exceed 60s (decryption + helm template + kustomize). The default
+    # caused intermittent
+    #   "DeadlineExceeded: stream terminated by RST_STREAM with error code: CANCEL"
+    # on the application-controller side.
+    controller.repo.server.timeout.seconds: "300"
+    # Cap concurrent manifest generations per repo-server replica. With HPA
+    # min=2 we still get 8 parallel slots — plenty for our workload — but a
+    # single slow render no longer starves the others past the deadline.
+    reposerver.parallelism.limit: "4"
 controller:
   replicas: 1
 extraObjects:
@@ -36,18 +47,28 @@ repoServer:
   autoscaling:
     enabled: true
     minReplicas: 2
+  # Match the controller-side deadline above. ARGOCD_EXEC_TIMEOUT controls
+  # how long the CMP plugin invocation can run before repo-server kills it;
+  # default 90s is shorter than the 300s we now allow upstream.
+  env:
+    - name: ARGOCD_EXEC_TIMEOUT
+      value: 300s
   extraContainers:
   - command:
     - /var/run/argocd/argocd-cmp-server
     env:
     - name: SOPS_AGE_KEY_FILE
       value: /keys/keys.txt
+    # Match the repo-server-side ARGOCD_EXEC_TIMEOUT so the CMP plugin and
+    # the gRPC envelope agree on the same deadline.
+    - name: ARGOCD_EXEC_TIMEOUT
+      value: 300s
     - name: HELM_CACHE_HOME
-      value: /tmp/helm-cache
+      value: /helm-cache
     - name: HELM_CONFIG_HOME
-      value: /tmp/helm-config
+      value: /helm-cache/config
     - name: HELM_DATA_HOME
-      value: /tmp/helm-data
+      value: /helm-cache/data
     image: viaductoss/ksops:v4.3.3
     imagePullPolicy: IfNotPresent
     name: ksops
@@ -69,6 +90,12 @@ repoServer:
       subPath: plugin.yaml
     - mountPath: /helm-tools
       name: helm-tools
+    # Persistent helm cache. Was on /tmp (emptyDir), so chart pulls happened
+    # on every repo-server pod restart. Dedicated emptyDir lets the cache
+    # survive within a pod's lifetime and avoids competing with /tmp's
+    # other consumers (KSOPS scratch space, kustomize temp files).
+    - mountPath: /helm-cache
+      name: helm-cache
     resources:
       requests:
         cpu: 100m
@@ -103,6 +130,9 @@ repoServer:
     name: cmp-plugin
   - emptyDir: {}
     name: helm-tools
+  # Dedicated emptyDir for HELM_CACHE_HOME — see KSOPS sidecar volumeMounts.
+  - emptyDir: {}
+    name: helm-cache
 server:
   autoscaling:
     enabled: true

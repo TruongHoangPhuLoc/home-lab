@@ -1,0 +1,50 @@
+# Trivy ignore file — YAML format with path scoping.
+#
+# Per Trivy docs, this file is the documented way to suppress findings on
+# specific files. Each entry pins an ID to the path(s) it applies to; a
+# future workload that triggers the same rule elsewhere will still fail CI.
+#
+# Schema reference:
+#   https://aquasecurity.github.io/trivy/latest/docs/configuration/filtering/#trivyignoreyaml
+#
+# IDs use the canonical AVD-prefixed form (`AVD-KSV-NNNN`, `AVD-DS-NNNN`).
+# The display IDs in the report (`KSV-0109` etc.) are derived from these.
+
+misconfigurations:
+  - id: AVD-KSV-0109
+    paths:
+      - "apps/homepage/configmap.yaml"
+    statement: |
+      False positive. The `password:` keys hold homepage template
+      placeholders ({{HOMEPAGE_VAR_*_PASSWORD}}) which are substituted from
+      the SOPS-encrypted secret.enc.yaml at runtime via envFrom. No real
+      secret is committed.
+
+  - id: AVD-KSV-0014
+    paths:
+      - "apps/homepage/manifests.yaml"
+    statement: |
+      Deferred. gethomepage's Next.js runtime writes within /app/.next at
+      startup; locking down readOnlyRootFilesystem requires explicit emptyDir
+      mounts (/tmp + /app/.next/cache) and a verification pass. Mitigations
+      in place: runAsNonRoot (UID 1000), drop ALL caps,
+      allowPrivilegeEscalation=false, seccomp=RuntimeDefault.
+
+  - id: AVD-KSV-0118
+    paths:
+      - "platform/observability/monitoring/kube-prometheus-stack/etcd-cert-syncer.yaml"
+    statement: |
+      Legitimate root. Both Job and CronJob mount /etc/kubernetes/pki/etcd/
+      from the control-plane host (hostPath) to copy etcd client certs into
+      a Secret consumed by Prometheus. Reading those files requires root.
+      Confined to control-plane nodes by nodeSelector + tolerations.
+
+  - id: AVD-DS-0002
+    paths:
+      - "infrastructure/services/monitoring-server/configuration/reverse-proxy/Dockerfile"
+    statement: |
+      Bare-metal Docker container (not k8s) for the monitoring-server
+      reverse proxy. Uses upstream nginx:latest which runs as root to bind
+      ports 80/443 directly on the host. TODO: switch to
+      nginxinc/nginx-unprivileged with port mapping when the
+      monitoring-server config is next revisited.

@@ -63,9 +63,10 @@ jobs:
           exit-code: '1'
           ignore-unfixed: true
           skip-dirs: '**/charts,infrastructure/kubernetes/installation/manual,infrastructure/kubernetes/installation/automated/add-ons'
-          # Documented false-positives + legitimate exceptions (path-scoped
-          # rationale lives inline above each affected resource).
-          trivyignores: '.trivyignore'
+          # Documented false-positives + legitimate exceptions, scoped per
+          # file so a future workload with the same issue still fails CI.
+          # Schema + rationale: see .trivyignore.yaml.
+          trivyignores: '.trivyignore.yaml'
 
   kube-linter:
     # k8s manifest quality (missing resource limits, privileged containers,

@@ -1,0 +1,55 @@
+# OpenTelemetry Collector — Deployment "cluster-collector". Cluster-scoped signal aggregation.
+#
+# Receivers:
+#   otlp                       → from node-collector DaemonSet (metrics, traces) and direct app SDKs (B8)
+#   k8s_cluster (preset)       → cluster-scoped metrics (Deployment, Node, Namespace counts/conditions)
+#   k8s_events (preset)        → kubernetes Events as logs
+#   k8sattributes (preset)     → enrichment processor on all pipelines
+#
+# Exports:
+#   logs    → otlphttp → Loki (k8s events join container logs in the same store)
+#   metrics → debug for now; B7 wires up prometheusremotewrite to kube-prom-stack
+#   traces  → debug for now; B5 wires up otlp → Tempo
+#
+# Single replica during B1 — adoption phase, low traffic. Bump to 2+ when
+# OBI starts pushing traces (B4) or apps push OTLP directly (B8).
+
+mode: deployment
+replicaCount: 1
+fullnameOverride: otel-collector-cluster
+
+image:
+  repository: otel/opentelemetry-collector-contrib
+
+presets:
+  clusterMetrics:
+    enabled: true
+  kubernetesEvents:
+    enabled: true
+  kubernetesAttributes:
+    enabled: true
+    extractAllPodLabels: false
+    extractAllPodAnnotations: false
+
+resources:
+  limits:
+    memory: 512Mi
+    cpu: 500m
+  requests:
+    memory: 256Mi
+    cpu: 100m
+
+config:
+  exporters:
+    otlphttp/loki:
+      endpoint: http://loki-gateway.logging.svc.cluster.local:80/otlp
+      tls:
+        insecure: true
+  service:
+    pipelines:
+      logs:
+        exporters:
+          - otlphttp/loki
+
+serviceMonitor:
+  enabled: false

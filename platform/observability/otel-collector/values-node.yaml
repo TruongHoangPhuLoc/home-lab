@@ -1,0 +1,71 @@
+# OpenTelemetry Collector — DaemonSet "node-collector". Per-node signal collection.
+#
+# Receivers (all node-local):
+#   filelog (preset)        → /var/log/pods/*/*/*.log
+#   hostmetrics (preset)    → CPU, memory, disk, network, filesystem
+#   kubeletstats (preset)   → per-pod, per-container resource usage
+#   otlp                    → traces from local app SDKs (B8) and OBI (B4)
+#
+# Exports:
+#   logs    → otlphttp → Loki (loki-gateway.logging.svc; flips when Loki moves in B0.2)
+#   metrics → otlp/grpc → otel-collector-cluster:4317 (aggregation point)
+#   traces  → otlp/grpc → otel-collector-cluster:4317 (cluster-collector fans out to Tempo in B5)
+#
+# Logs ship straight to Loki (decoupled from cluster-collector uptime).
+# Metrics & traces flow to the cluster-collector for centralised
+# processing/enrichment before any cross-cluster export.
+
+mode: daemonset
+fullnameOverride: otel-collector-node
+
+image:
+  repository: otel/opentelemetry-collector-contrib
+
+presets:
+  logsCollection:
+    enabled: true
+    includeCollectorLogs: false
+    storeCheckpoints: true
+  hostMetrics:
+    enabled: true
+  kubeletMetrics:
+    enabled: true
+  kubernetesAttributes:
+    enabled: true
+    extractAllPodLabels: false
+    extractAllPodAnnotations: false
+
+resources:
+  limits:
+    memory: 384Mi
+    cpu: 300m
+  requests:
+    memory: 192Mi
+    cpu: 75m
+
+config:
+  exporters:
+    otlphttp/loki:
+      endpoint: http://loki-gateway.logging.svc.cluster.local:80/otlp
+      tls:
+        insecure: true
+    otlp/cluster:
+      endpoint: otel-collector-cluster.observability.svc.cluster.local:4317
+      tls:
+        insecure: true
+  service:
+    pipelines:
+      logs:
+        exporters:
+          - otlphttp/loki
+      metrics:
+        exporters:
+          - otlp/cluster
+      traces:
+        exporters:
+          - otlp/cluster
+
+# kube-prom-stack ServiceMonitor support comes when metrics export is wired
+# end-to-end (B7 — see PLAN.md). Until then, no scrape target.
+serviceMonitor:
+  enabled: false

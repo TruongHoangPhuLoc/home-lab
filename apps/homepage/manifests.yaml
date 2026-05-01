@@ -89,7 +89,6 @@ spec:
 # mounts for /tmp + /app/.next/cache and a production verification pass.
 # Mitigation in place: runAsNonRoot (UID 1000), drop ALL caps,
 # allowPrivilegeEscalation=false, seccomp=RuntimeDefault.
-# trivy:ignore:AVD-KSV-0014
 apiVersion: apps/v1
 kind: Deployment
 metadata:

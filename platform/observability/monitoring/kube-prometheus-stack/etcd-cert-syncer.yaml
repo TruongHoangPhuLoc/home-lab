@@ -53,7 +53,6 @@ subjects:
 # Secret consumed by Prometheus. Reading those files requires root.
 # Confined: nodeSelector targets control-plane nodes only; tolerations
 # match those taints; container drops back to read-only after the copy.
-# trivy:ignore:AVD-KSV-0118
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -131,7 +130,6 @@ spec:
 # refreshes etcd client certs from /etc/kubernetes/pki/etcd/ on the
 # control-plane host on a schedule. Confined to control-plane nodes by
 # nodeSelector + tolerations.
-# trivy:ignore:AVD-KSV-0118
 apiVersion: batch/v1
 kind: CronJob
 metadata:

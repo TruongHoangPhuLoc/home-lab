@@ -138,13 +138,17 @@ spec:
             limits:
               cpu: 500m
               memory: 512Mi
+          # trivy:ignore:KSV0014
+          # readOnlyRootFilesystem deferred: gethomepage's Next.js runtime
+          # writes within /app/.next at startup. Locking it down requires
+          # explicit emptyDir mounts for /tmp + /app/.next/cache and a
+          # production verification pass — out of scope for this commit.
+          # Mitigation in place: runAsNonRoot=true (UID 1000), drop ALL caps,
+          # allowPrivilegeEscalation=false, seccomp=RuntimeDefault.
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
               drop: [ALL]
-            # NOTE: not setting readOnlyRootFilesystem — gethomepage rebuilds
-            # its Next.js cache and config on startup and writes within /app.
-            # Locked down via runAsNonRoot + drop ALL caps + non-root UID.
           livenessProbe:
             httpGet:
               path: /

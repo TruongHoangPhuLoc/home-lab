@@ -3,6 +3,12 @@ kind: Service
 metadata:
   name: prometheus-operated-lb
   namespace: monitoring
+  annotations:
+    # kube-linter renders this Service in isolation and can't see the
+    # Prometheus StatefulSet pods (created by the kube-prometheus-stack
+    # helm chart in the sibling kustomization). The selector IS correct
+    # against the live cluster; this is a known false positive.
+    ignore-check.kube-linter.io/dangling-service: "kube-prometheus-stack helm-rendered Pod targets"
 spec:
   ports:
     - name: http-web

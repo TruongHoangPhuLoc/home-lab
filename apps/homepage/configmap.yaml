@@ -1,3 +1,9 @@
+# trivy:ignore:KSV0109
+# False positive: the `password:` keys here hold homepage template
+# placeholders like {{HOMEPAGE_VAR_OPNSENSE_PASSWORD}}, NOT real secret
+# values. Real secrets land via envFrom: secretRef from the SOPS-encrypted
+# secret.enc.yaml at runtime (see HOMEPAGE_VAR_* substitution in
+# https://gethomepage.dev/installation/docker/#using-environment-secrets).
 apiVersion: v1
 kind: ConfigMap
 metadata:

@@ -1,0 +1,77 @@
+# Security scanning — runs on every push to main + every PR.
+#
+# Three independent jobs (run in parallel):
+#   gitleaks     — full-history secret scan; backstop for pre-commit's SOPS check
+#   trivy-config — IaC misconfiguration scan (k8s manifests, helm renders, Dockerfiles)
+#   kube-linter  — k8s manifest quality (resource limits, privileged containers, ...)
+#
+# Pre-commit hook (.pre-commit-config.yaml) is the local fast-feedback layer;
+# this workflow is the line that can't be bypassed via `git commit --no-verify`
+# or "I cloned fresh and didn't run pre-commit install yet."
+
+name: security-scan
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Cancel superseded runs (e.g., when a PR gets force-pushed). Saves CI minutes
+# and avoids confusing "two runs, one passes one fails" UI.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  gitleaks:
+    # Detects committed API keys, tokens, passwords. Scans full git history,
+    # so it'll surface any pre-existing leaks from older commits (e.g. content
+    # we deleted but lives forever in history). Triage findings as work items.
+    name: gitleaks (secret scan)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history needed; gitleaks scans all commits, not just HEAD.
+          fetch-depth: 0
+      - name: Run gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  trivy-config:
+    # IaC misconfiguration scan: Terraform under infrastructure/, k8s manifests
+    # under platform/, helm chart values, Dockerfiles, etc. CRITICAL/HIGH only
+    # to keep signal high; bump to MEDIUM if we want to tighten later.
+    name: trivy (IaC misconfig)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Trivy config scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: config
+          severity: CRITICAL,HIGH
+          exit-code: '1'
+          ignore-unfixed: true
+          # Skip the helm chart caches that `kubectl kustomize --enable-helm`
+          # writes locally during dev — they're already in .gitignore but
+          # Trivy still scans them if they slip in.
+          skip-dirs: '**/charts'
+
+  kube-linter:
+    # k8s manifest quality (missing resource limits, privileged containers,
+    # missing liveness/readiness probes, etc.). Doesn't render helm charts —
+    # only catches issues in raw manifests under apps/ + platform/.
+    name: kube-linter (manifest quality)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run kube-linter
+        uses: stackrox/kube-linter-action@v1
+        with:
+          directory: .
+          format: plain

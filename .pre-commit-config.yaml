@@ -1,0 +1,46 @@
+# Pre-commit hooks. One-time install per workstation:
+#   pip install pre-commit  (or `brew install pre-commit`)
+#   pre-commit install
+#
+# Once installed, every `git commit` runs the hooks below against staged files.
+# Bypass with `--no-verify` (don't, unless you know what you're doing —
+# GH Actions in .github/workflows/security.yml is the backstop).
+#
+# Update hook versions periodically:
+#   pre-commit autoupdate
+
+repos:
+  # Custom local hook: any *.enc.yaml file MUST be SOPS-encrypted.
+  # `sops` is a manual CLI tool; without this hook, a plaintext file with
+  # an `.enc.yaml` extension would commit cleanly. Detection rule: a real
+  # SOPS-encrypted file always has a top-level `sops:` block.
+  - repo: local
+    hooks:
+      - id: sops-encrypted
+        name: Verify *.enc.yaml files are SOPS-encrypted
+        # Folded scalar used because the bash one-liner contains both ' and ".
+        entry: >-
+          bash -c 'for f in "$@"; do grep -q "^sops:" "$f" || { echo "ERROR:
+          $f matches *.enc.yaml but is NOT encrypted. Run: sops -e -i $f";
+          exit 1; }; done' --
+        language: system
+        files: '\.enc\.yaml$'
+
+  # Generic hygiene — small, fast, catch obvious problems.
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-yaml
+        # k8s manifests + helm values often contain multiple `---`-separated
+        # documents per file; --allow-multiple-documents prevents false
+        # positives on those.
+        args: [--allow-multiple-documents]
+        # KSOPS-generated `kustomization.yaml` references and other
+        # generators contain non-standard YAML tags that check-yaml
+        # mishandles; restrict to plain YAML files in the workloads.
+        exclude: '(.*\.enc\.yaml$|.*ksops\.yaml$)'
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=512]

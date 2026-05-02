@@ -9,7 +9,7 @@ helmCharts:
     repo: https://prometheus-community.github.io/helm-charts
     version: 82.16.2
     releaseName: kube-prometheus-stack
-    namespace: monitoring
+    namespace: observability
     valuesFile: values.yaml
 
 generators:

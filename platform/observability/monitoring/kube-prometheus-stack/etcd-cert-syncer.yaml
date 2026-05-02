@@ -4,17 +4,17 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: etcd-cert-syncer
-  namespace: monitoring
+  namespace: observability
   labels:
     app.kubernetes.io/name: kube-prometheus-stack
     app.kubernetes.io/component: etcd-cert-syncer
 ---
-# Role to manage secrets in monitoring namespace
+# Role to manage secrets in observability namespace
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: etcd-cert-syncer
-  namespace: monitoring
+  namespace: observability
   labels:
     app.kubernetes.io/name: kube-prometheus-stack
     app.kubernetes.io/component: etcd-cert-syncer
@@ -34,7 +34,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: etcd-cert-syncer
-  namespace: monitoring
+  namespace: observability
   labels:
     app.kubernetes.io/name: kube-prometheus-stack
     app.kubernetes.io/component: etcd-cert-syncer
@@ -45,7 +45,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: etcd-cert-syncer
-  namespace: monitoring
+  namespace: observability
 ---
 # One-time Job to bootstrap etcd certificates for initial deployment.
 # Legitimate root: this Job mounts /etc/kubernetes/pki/etcd/ from the
@@ -57,7 +57,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
   name: etcd-cert-syncer-bootstrap
-  namespace: monitoring
+  namespace: observability
   labels:
     app.kubernetes.io/name: kube-prometheus-stack
     app.kubernetes.io/component: etcd-cert-syncer
@@ -105,7 +105,7 @@ spec:
           export HOME=/tmp
           echo "Bootstrapping etcd-client-certs secret..."
           kubectl create secret generic etcd-client-certs \
-            --namespace=monitoring \
+            --namespace=observability \
             --from-file=etcd-ca=/etc/kubernetes/pki/etcd/ca.crt \
             --from-file=etcd-client=/etc/kubernetes/pki/etcd/healthcheck-client.crt \
             --from-file=etcd-client-key=/etc/kubernetes/pki/etcd/healthcheck-client.key \
@@ -125,7 +125,7 @@ spec:
       - name: tmp-dir
         emptyDir: {}
 ---
-# CronJob to sync etcd certificates from control plane to monitoring namespace.
+# CronJob to sync etcd certificates from control plane to observability namespace.
 # Same legitimate-root rationale as the bootstrap Job above — this CronJob
 # refreshes etcd client certs from /etc/kubernetes/pki/etcd/ on the
 # control-plane host on a schedule. Confined to control-plane nodes by
@@ -134,7 +134,7 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
   name: etcd-cert-syncer
-  namespace: monitoring
+  namespace: observability
   labels:
     app.kubernetes.io/name: kube-prometheus-stack
     app.kubernetes.io/component: etcd-cert-syncer
@@ -183,7 +183,7 @@ spec:
               # Set HOME to /tmp so kubectl can write its discovery cache
               export HOME=/tmp
               kubectl create secret generic etcd-client-certs \
-                --namespace=monitoring \
+                --namespace=observability \
                 --from-file=etcd-ca=/etc/kubernetes/pki/etcd/ca.crt \
                 --from-file=etcd-client=/etc/kubernetes/pki/etcd/healthcheck-client.crt \
                 --from-file=etcd-client-key=/etc/kubernetes/pki/etcd/healthcheck-client.key \

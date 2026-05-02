@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: prometheus-operated-lb
-  namespace: monitoring
+  namespace: observability
   annotations:
     # kube-linter renders this Service in isolation and can't see the
     # Prometheus StatefulSet pods (created by the kube-prometheus-stack

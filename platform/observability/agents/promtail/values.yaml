@@ -1,4 +1,0 @@
-# Promtail helm overrides.
-# Current in-cluster release (chart promtail-6.16.4, app v3.0.0) was installed
-# with empty user values — chart defaults are what we run. Keep this file in
-# place as a canonical location for future overrides.

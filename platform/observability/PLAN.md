@@ -123,18 +123,18 @@ flowchart TB
 Single `observability` namespace contains every signal-producing or
 signal-consuming component:
 
-| Component | Origin |
+| Component | Status |
 |---|---|
-| loki (distributed) | moved from `logging` |
-| promtail | moved from `logging` (will be retired in B1) |
-| kube-prometheus-stack | moved from `monitoring` |
-| (B1) otel-collector DaemonSet + gateway | future |
+| loki (distributed) | moved from `logging` ✓ |
+| **promtail** | **retired** — replaced by otel-collector node-collector |
+| kube-prometheus-stack | moved from `monitoring` ✓ |
+| otel-collector node-collector + cluster-collector | landed (B1) ✓ |
 | (B3) Hubble OTLP/metrics exporter | future, namespace TBD — likely `kube-system` next to cilium |
 | (B4) OBI DaemonSet | future |
 | (B5) tempo | future, replaces the toy `tempo` namespace deploy |
 
-Namespaces deleted after the migration: `logging`, `monitoring`, `tempo`,
-`observability-learning`, `filebeat`.
+Namespaces deleted: `logging`, `monitoring`, `tempo`, `observability-learning`,
+`filebeat` ✓.
 
 ### 3.2 Diagram — target state (post-B5)
 

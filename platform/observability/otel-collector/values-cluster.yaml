@@ -42,7 +42,7 @@ resources:
 config:
   exporters:
     otlphttp/loki:
-      endpoint: http://loki-gateway.logging.svc.cluster.local:80/otlp
+      endpoint: http://loki-gateway.observability.svc.cluster.local:80/otlp
       tls:
         insecure: true
   service:

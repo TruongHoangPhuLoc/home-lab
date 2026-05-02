@@ -35,7 +35,8 @@ loki:
   ingester:
     chunk_encoding: snappy
   limits_config:
-    retention_period: 7d
+    # 15d to match kube-prom-stack's Prometheus retention.
+    retention_period: 15d
   querier:
     max_concurrent: 4
   schemaConfig:

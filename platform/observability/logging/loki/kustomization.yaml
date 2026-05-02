@@ -9,7 +9,7 @@ helmCharts:
     repo: https://grafana-community.github.io/helm-charts
     version: 9.5.10
     releaseName: loki
-    namespace: logging
+    namespace: observability
     valuesFile: values.yaml
 
 resources:

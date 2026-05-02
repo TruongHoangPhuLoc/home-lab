@@ -11,5 +11,5 @@ helmCharts:
     repo: https://grafana.github.io/helm-charts
     version: 6.16.4           # pinned; matches current in-cluster release
     releaseName: promtail
-    namespace: logging
+    namespace: observability
     valuesFile: values.yaml

@@ -7,7 +7,7 @@
 #   otlp                    → traces from local app SDKs (B8) and OBI (B4)
 #
 # Exports:
-#   logs    → otlphttp → Loki (loki-gateway.logging.svc; flips when Loki moves in B0.2)
+#   logs    → otlphttp → Loki (loki-gateway.observability.svc)
 #   metrics → otlp/grpc → otel-collector-cluster:4317 (aggregation point)
 #   traces  → otlp/grpc → otel-collector-cluster:4317 (cluster-collector fans out to Tempo in B5)
 #
@@ -52,7 +52,7 @@ tolerations:
 config:
   exporters:
     otlphttp/loki:
-      endpoint: http://loki-gateway.logging.svc.cluster.local:80/otlp
+      endpoint: http://loki-gateway.observability.svc.cluster.local:80/otlp
       tls:
         insecure: true
     otlp/cluster:

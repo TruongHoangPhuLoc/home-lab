@@ -1,0 +1,28 @@
+# external-snapshotter (CRDs + snapshot-controller).
+# Pinned chart: piraeus-charts/snapshot-controller 5.0.3 (app v8.5.0).
+#
+# Why we need this: rook-ceph's CSI provisioner sidecars
+# (csi-rbd-provisioner / csi-cephfs-provisioner) include the upstream
+# csi-snapshotter sidecar, which watches `VolumeSnapshotContent` /
+# `VolumeSnapshot` resources. Those CRDs are NOT bundled with rook-ceph
+# — the kubernetes-csi/external-snapshotter project owns them and
+# expects to be installed separately. Without the CRDs and controller,
+# the sidecars log noisy "could not find the requested resource" errors
+# and any future PVC snapshot operation would fail.
+#
+# Chart defaults (installCRDs=true, controller.enabled=true,
+# leader election scoped to its own namespace) are sensible; we only
+# pin the image and leave headroom on resources.
+
+installCRDs: true
+
+controller:
+  enabled: true
+  replicaCount: 1
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 10m
+      memory: 32Mi

@@ -1,0 +1,12 @@
+bgpControlPlane:
+  enabled: true
+ingressController:
+  enabled: true
+  loadbalancerMode: shared
+ipam:
+  mode: cluster-pool
+  operator:
+    clusterPoolIPv4PodCIDRList: 10.170.0.0/16
+k8sServiceHost: k8s-api-server.internal.locthp.com
+k8sServicePort: 6443
+kubeProxyReplacement: true

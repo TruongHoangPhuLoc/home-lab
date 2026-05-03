@@ -32,9 +32,11 @@ grafana:
     existingSecret: grafana-creds
     passwordKey: admin-password
     userKey: admin-user
-  # Provision Loki as an additional datasource (the chart already provisions
-  # Prometheus + Alertmanager). access: proxy routes via Grafana's backend so
-  # WebSocket-based live tailing works without exposing Loki publicly.
+  # Provision Loki + Tempo as additional datasources (the chart already
+  # provisions Prometheus + Alertmanager). access: proxy routes via
+  # Grafana's backend so WebSocket-based live tailing (Loki) and
+  # cross-datasource correlation (TraceQL → logs) work without exposing
+  # the backends publicly.
   additionalDataSources:
     - name: Loki
       type: loki
@@ -45,6 +47,44 @@ grafana:
       jsonData:
         maxLines: 1000
         timeout: 60
+        # Trace ID → Tempo trace correlation. Loki emits a "Tempo" link
+        # in matching log entries.
+        derivedFields:
+          - name: traceID
+            datasourceUid: tempo
+            matcherRegex: 'trace_id=(\w+)'
+            url: '$${__value.raw}'
+    - name: Tempo
+      type: tempo
+      uid: tempo
+      access: proxy
+      url: http://tempo.observability.svc.cluster.local:3200
+      isDefault: false
+      jsonData:
+        # Trace span → Loki log correlation by k8s pod attributes.
+        # Lets you click "Logs for this span" in the trace view.
+        tracesToLogsV2:
+          datasourceUid: loki
+          spanStartTimeShift: '-5m'
+          spanEndTimeShift: '5m'
+          tags:
+            - key: k8s.namespace.name
+              value: k8s_namespace_name
+            - key: k8s.pod.name
+              value: k8s_pod_name
+            - key: k8s.container.name
+              value: k8s_container_name
+        # Trace span → Prometheus metric correlation (RED metrics).
+        tracesToMetrics:
+          datasourceUid: prometheus
+          tags:
+            - key: service.name
+              value: service_name
+        # Service graph node click → Prometheus rate query.
+        serviceMap:
+          datasourceUid: prometheus
+        nodeGraph:
+          enabled: true
   ingress:
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-prod

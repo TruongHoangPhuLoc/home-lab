@@ -27,13 +27,19 @@ privileged: true
 tolerations:
   - operator: Exists
 
+# Bumped from 512Mi/500m after the first deploy OOMKilled the
+# worker-01 pod twice and pinned worker-02 at the CPU limit. eBPF map
+# memory + Go runtime + per-process instrumentation state on busy
+# nodes (loki ingester, prometheus, kube-prom-stack helpers all in
+# observability ns) easily exceeds 512Mi. CPU spikes during program
+# attachment are expected.
 resources:
   limits:
-    memory: 512Mi
-    cpu: 500m
+    memory: 1536Mi
+    cpu: 1500m
   requests:
-    memory: 128Mi
-    cpu: 50m
+    memory: 256Mi
+    cpu: 100m
 
 config:
   create: true

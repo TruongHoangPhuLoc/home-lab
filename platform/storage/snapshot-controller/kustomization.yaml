@@ -20,11 +20,26 @@ resources:
   - https://github.com/kubernetes-csi/external-snapshotter/client/config/crd?ref=v8.5.0
   - https://github.com/kubernetes-csi/external-snapshotter/deploy/kubernetes/snapshot-controller?ref=v8.5.0
 
-# Upstream manifests don't set resource requests/limits on the
-# snapshot-controller container, which trips our trivy/kube-linter
-# scan gate. Patch them in here. Values are conservative — the
-# controller is a thin coordinator (lists VolumeSnapshot* objects,
-# updates statuses), not a hot path.
+# Upstream manifests ship a bare-bones Deployment — no resource
+# requests/limits, no securityContext, no anti-affinity — which trips
+# kube-linter (no-anti-affinity, no-read-only-root-fs, run-as-non-root)
+# and trivy (KSV-0014 readOnlyRootFilesystem, KSV-0118 default
+# securityContext at both pod and container scope). Patch all of these
+# in here rather than via .trivyignore — structural fixes are preferred.
+#
+# Resources: conservative — the controller is a thin coordinator (lists
+# VolumeSnapshot* objects, updates statuses), not a hot path.
+#
+# Pod-level securityContext: runAsNonRoot + a non-zero runAsUser/Group +
+# seccompProfile. The upstream image is built FROM gcr.io/distroless/static
+# which has no shell and no writable paths the controller needs — readOnly
+# root filesystem is safe. Capabilities dropped to ALL; the controller
+# only talks to the kube-apiserver, no syscalls beyond what RuntimeDefault
+# seccomp allows.
+#
+# podAntiAffinity: prefer (not require) spreading the 2 replicas across
+# nodes. `preferred` rather than `required` so the deployment still
+# schedules on a single-node cluster or during a rolling node drain.
 patches:
   - target:
       kind: Deployment
@@ -38,6 +53,22 @@ patches:
       spec:
         template:
           spec:
+            securityContext:
+              runAsNonRoot: true
+              runAsUser: 65532
+              runAsGroup: 65532
+              fsGroup: 65532
+              seccompProfile:
+                type: RuntimeDefault
+            affinity:
+              podAntiAffinity:
+                preferredDuringSchedulingIgnoredDuringExecution:
+                  - weight: 100
+                    podAffinityTerm:
+                      topologyKey: kubernetes.io/hostname
+                      labelSelector:
+                        matchLabels:
+                          app.kubernetes.io/name: snapshot-controller
             containers:
               - name: snapshot-controller
                 resources:
@@ -47,3 +78,9 @@ patches:
                   limits:
                     cpu: 100m
                     memory: 128Mi
+                securityContext:
+                  allowPrivilegeEscalation: false
+                  readOnlyRootFilesystem: true
+                  capabilities:
+                    drop:
+                      - ALL

@@ -19,3 +19,31 @@ kind: Kustomization
 resources:
   - https://github.com/kubernetes-csi/external-snapshotter/client/config/crd?ref=v8.5.0
   - https://github.com/kubernetes-csi/external-snapshotter/deploy/kubernetes/snapshot-controller?ref=v8.5.0
+
+# Upstream manifests don't set resource requests/limits on the
+# snapshot-controller container, which trips our trivy/kube-linter
+# scan gate. Patch them in here. Values are conservative — the
+# controller is a thin coordinator (lists VolumeSnapshot* objects,
+# updates statuses), not a hot path.
+patches:
+  - target:
+      kind: Deployment
+      name: snapshot-controller
+      namespace: kube-system
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: snapshot-controller
+      spec:
+        template:
+          spec:
+            containers:
+              - name: snapshot-controller
+                resources:
+                  requests:
+                    cpu: 10m
+                    memory: 32Mi
+                  limits:
+                    cpu: 100m
+                    memory: 128Mi

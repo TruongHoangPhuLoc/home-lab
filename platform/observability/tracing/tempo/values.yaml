@@ -1,0 +1,89 @@
+# Tempo helm overrides.
+# Pinned chart: tempo 2.1.0 (app v2.10.1, single binary mode) from
+# https://grafana-community.github.io/helm-charts (the active fork
+# of grafana/tempo after migration).
+#
+# Storage backend: Ceph RGW S3, same pattern as Loki — credentials
+# and bucket name are injected at runtime from the OBC-emitted
+# Secret + ConfigMap (`tempo-storage`). Nothing sensitive in this file.
+
+# Single-replica single binary. Bump replicas later if trace volume
+# grows enough to warrant horizontal scaling.
+replicas: 1
+
+tempo:
+  # Force `${BUCKET_NAME}` (and other env-derived values) to be
+  # expanded at process start instead of treated as literal strings.
+  extraArgs:
+    "config.expand-env": "true"
+  # Inject the OBC-provisioned credentials + bucket metadata into the
+  # tempo container as env vars.
+  extraEnvFrom:
+    - secretRef:
+        name: tempo-storage
+    - configMapRef:
+        name: tempo-storage
+
+  # Single-tenant homelab — no auth header required from clients.
+  multitenancyEnabled: false
+
+  # Block retention. 7d gives several days of trace history per
+  # service while keeping bucket usage modest. Bump after we know real
+  # trace volume from OBI (B4) and chat-app SDK (B8).
+  retention: 168h
+
+  # Receivers — only OTLP is wired for now. OBI + future SDK clients
+  # speak OTLP; jaeger/zipkin/opencensus blocks are kept commented out
+  # and can be enabled later if a non-OTLP source shows up.
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+
+  # Storage config — tempo's own templating renders this verbatim into
+  # the config file, with `${BUCKET_NAME}` expanded at startup via
+  # config.expand-env.
+  storage:
+    trace:
+      backend: s3
+      s3:
+        bucket: ${BUCKET_NAME}
+        endpoint: rook-ceph-rgw-ceph-objectstore.rook-ceph.svc:80
+        insecure: true
+        forcepathstyle: true
+        region: us-east-1
+      wal:
+        path: /var/tempo/wal
+
+  # Disable the in-tree usage reporter (no homelab telemetry going
+  # to grafana.com).
+  reportingEnabled: false
+
+# No Ingress needed — Grafana queries Tempo internally via the
+# `tempo.observability.svc:3200` ClusterIP. The chart's only Ingress
+# option is `tempoQuery.ingress` for the (deprecated) Jaeger-UI shim,
+# which we explicitly disable below. Add an Ingress later only if a
+# workstation tempo-cli or external client needs it.
+
+# Modest resources for a homelab single-binary tempo. Adjust after
+# observing real trace volume from OBI.
+resources:
+  limits:
+    memory: 512Mi
+    cpu: 500m
+  requests:
+    memory: 256Mi
+    cpu: 100m
+
+# Disable the chart's tempo-query (the older Jaeger-UI shim).
+# Grafana queries Tempo's native API directly.
+tempoQuery:
+  enabled: false
+
+# kube-prom-stack ServiceMonitor — defer until traces are flowing and
+# we want internal telemetry. Not blocking for B5.
+serviceMonitor:
+  enabled: false

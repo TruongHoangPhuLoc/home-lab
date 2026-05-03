@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# grafana/tempo (single binary) was migrated to the grafana-community
+# fork — the original grafana/tempo chart 1.24.4 carries a deprecation
+# notice pointing here. Same upstream chart, fork takes ongoing updates.
+# Same story as Loki, which is also pulled from grafana-community.
+helmCharts:
+  - name: tempo
+    repo: https://grafana-community.github.io/helm-charts
+    version: 2.1.0
+    releaseName: tempo
+    namespace: observability
+    valuesFile: values.yaml
+
+resources:
+  - obc.yaml

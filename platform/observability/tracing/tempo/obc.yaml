@@ -1,0 +1,18 @@
+# ObjectBucketClaim — single bucket for Tempo trace blocks.
+#
+# Same pattern as logging/loki/obc.yaml: rook's bucket provisioner
+# emits in this namespace:
+#   - Secret/tempo-storage     → AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY
+#   - ConfigMap/tempo-storage  → BUCKET_HOST, BUCKET_PORT, BUCKET_NAME, BUCKET_REGION
+#
+# Tempo pods consume both via tempo.extraEnvFrom in values.yaml, and
+# use `-config.expand-env=true` to interpolate ${BUCKET_NAME} into the
+# rendered storage config at process start.
+apiVersion: objectbucket.io/v1alpha1
+kind: ObjectBucketClaim
+metadata:
+  name: tempo-storage
+  namespace: observability
+spec:
+  generateBucketName: tempo-storage
+  storageClassName: ceph-bucket

@@ -1,0 +1,84 @@
+# OpenTelemetry eBPF Instrumentation (OBI) — Phase B4.
+# Pinned chart: opentelemetry-ebpf-instrumentation 0.8.0 (app v0.8.0)
+# from https://open-telemetry.github.io/opentelemetry-helm-charts.
+#
+# OBI was donated to OTel from Grafana Beyla. It runs as a privileged
+# DaemonSet, attaches eBPF probes to running pods (HTTP/gRPC/SQL/Redis
+# transactions visible at the kernel layer), synthesises trace context
+# where the application doesn't propagate `traceparent` itself, and
+# emits OTLP traces + RED metrics — all without code changes.
+#
+# Trace pipeline target: Tempo directly (skips the otel-collector for
+# now — no trace-pipeline processors configured there yet, and the
+# direct path is simpler to debug). Switch to otel-collector-cluster
+# in the future if/when we add trace enrichment processors (geoip,
+# iplookup, k8sattributes for span resource attrs).
+
+preset: application
+
+# Privileged DaemonSet — eBPF programs need CAP_SYS_ADMIN to attach
+# uprobes for trace context propagation in userspace binaries (Go,
+# Rust, C++). The chart's default privileged: true is what we want.
+privileged: true
+
+# Tolerate every taint so OBI runs on control-plane nodes too. Same
+# posture as otel-collector-node-agent — kube-apiserver, etcd,
+# scheduler, controller-manager are all worth tracing.
+tolerations:
+  - operator: Exists
+
+resources:
+  limits:
+    memory: 512Mi
+    cpu: 500m
+  requests:
+    memory: 128Mi
+    cpu: 50m
+
+config:
+  create: true
+  data:
+    # Trace export → Tempo's OTLP gRPC endpoint. insecure=true because
+    # in-cluster, no TLS termination on the tempo side.
+    otel_traces_export:
+      endpoint: "http://tempo.observability.svc.cluster.local:4317"
+      insecure: true
+
+    # Skip metrics export for now — OBI's RED metrics overlap with
+    # what kube-prometheus-stack already scrapes from cluster pods.
+    # Revisit when we want application-level RED panels. The
+    # prometheus_export endpoint stays on for self-telemetry only.
+    prometheus_export:
+      port: 9090
+      path: /metrics
+
+    # Enrich spans with k8s metadata (namespace, pod, container, deployment).
+    # Enabled by default in the chart's preset, kept explicit here.
+    attributes:
+      kubernetes:
+        enable: true
+
+    # Filter out infrastructure pods that produce a lot of low-value
+    # spans. Defaults from the chart's preset, restated here so the
+    # exclusions are obvious in our values:
+    #   kube*       — kube-apiserver/scheduler/controller-manager (high churn, low signal)
+    #   *prometheus* — Prometheus's own scrapes
+    #   *promtail* / *grafana-agent* — log shippers (already retired but defaults are fine)
+    discovery:
+      services:
+        - k8s_namespace: argocd
+        - k8s_namespace: chat-app
+        - k8s_namespace: homepage
+        - k8s_namespace: traefik
+        - k8s_namespace: cert-manager
+        - k8s_namespace: external-dns
+        - k8s_namespace: observability
+      exclude_services:
+        - exe_path: ".*loki-canary.*"
+        - exe_path: ".*memcached.*"
+
+# kube-prom-stack ServiceMonitor — defer until OBI is producing
+# traces and we want to track its own throughput. Not blocking for
+# B4 first deploy.
+serviceMonitor:
+  enabled: false

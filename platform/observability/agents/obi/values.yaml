@@ -64,6 +64,20 @@ config:
       kubernetes:
         enable: true
 
+    # Experimental: kernel-level trace context propagation.
+    #   `headers` — injects `traceparent` HTTP header on outbound calls
+    #               via uprobes on Go's net/http client.
+    #   `ip`      — encodes trace context in TCP option fields (works
+    #               beyond HTTP, but can be stripped by middleboxes/NAT).
+    #   `all`     — both.
+    # With this on, OBI synthesises end-to-end traces *without* the
+    # application doing anything — the missing piece for argocd's gRPC.
+    # Caveat: only certain Go runtime / HTTP library versions are
+    # patchable; coverage on argocd may be partial. Reverting is one
+    # field flip if it causes issues.
+    ebpf:
+      context_propagation: all
+
     # Filter out infrastructure pods that produce a lot of low-value
     # spans. Defaults from the chart's preset, restated here so the
     # exclusions are obvious in our values:

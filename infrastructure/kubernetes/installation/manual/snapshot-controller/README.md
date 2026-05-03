@@ -37,10 +37,10 @@ kubectl --context home-cluster apply -k \
 
 ```bash
 kubectl --context home-cluster get crd | grep snapshot.storage.k8s.io
-# expect 3 lines (volumesnapshot{,classes,contents})
+# expect 6 lines (3 volumesnapshot* + 3 volumegroupsnapshot*)
 
-kubectl --context home-cluster -n kube-system get pod -l app=snapshot-controller
-# expect snapshot-controller-* Running 1/1
+kubectl --context home-cluster -n kube-system get pod -l app.kubernetes.io/name=snapshot-controller
+# expect 2 snapshot-controller-* pods Running 1/1 (HA pair, leader-elected)
 ```
 
 ## Uninstall
@@ -58,10 +58,6 @@ relies on them.
 
 ## Current install on this cluster
 
-The first install (2026-05-02) was via the Piraeus
-`piraeus-charts/snapshot-controller` 5.0.3 chart (app v8.5.0) before
-this runbook existed. Resources are now orphaned from the original
-ArgoCD Application but functionally identical to what the kubectl apply
-above would produce. Next upgrade should switch to the upstream kustomize
-bases above; uninstalling the chart-managed Deployment first is not
-required — `kubectl apply` will re-own with server-side merge.
+Installed via the upstream kustomize bases at `ref=v8.5.0` on 2026-05-02
+after a brief detour through the Piraeus chart (rolled back as overkill).
+Reproduced by running the two `kubectl apply -k` commands above.

@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# external-snapshotter (kubernetes-csi/external-snapshotter).
+# Pulls the upstream CRDs + controller manifests via kustomize remote
+# bases. No helm chart wrapping — this project is upstream-stable, we
+# don't customize anything, and remote bases keep the version bump down
+# to a single ?ref= edit.
+#
+# Why we need it: rook-ceph's CSI provisioner sidecars include the
+# upstream csi-snapshotter, which watches VolumeSnapshot* resources but
+# doesn't ship the CRDs. Without these CRDs the sidecar logs noisy
+# "could not find the requested resource" errors continuously and any
+# PVC snapshot operation would fail.
+#
+# To upgrade: bump both ?ref= values to the new external-snapshotter
+# release tag. Diff via `kustomize build` before sync.
+
+resources:
+  - https://github.com/kubernetes-csi/external-snapshotter/client/config/crd?ref=v8.5.0
+  - https://github.com/kubernetes-csi/external-snapshotter/deploy/kubernetes/snapshot-controller?ref=v8.5.0

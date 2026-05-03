@@ -5,7 +5,11 @@ disruptive structural change (namespace consolidation) lands first, then
 the OTel Collector cutover, then layered tracing (Hubble → OBI → SDK
 instrumentation), then a real trace backend (Tempo).
 
-This document is a planning artifact — no code changes have been made yet.
+> **Status (2026-05-03):** B0 → B1 done. Trace stack (B4 OBI + B5 Tempo)
+> was built and exercised end-to-end, then **decommissioned** to free
+> cluster resources and to defer the deeper learning curve to a future
+> session. Lessons captured below in §11. Logs + metrics pipelines
+> stay live.
 
 Cross-references:
 - Architecture decision (Option B, full OTel): memory `project_observability_redesign.md`.
@@ -556,3 +560,78 @@ information at its layer.
     capabilities)
 - **Decision rule:** revisit only if a triggering event from the list
   above occurs. Don't backfill it just because it's possible.
+
+---
+
+## 11. Trace stack post-mortem (2026-05-03)
+
+We built B4 (OBI) and B5 (Tempo) end-to-end, validated traces flowing
+into Tempo, exercised the Grafana datasource + cross-correlation, and
+then decommissioned both. Capturing what we learned so the next person
+(future me) starts from the right place.
+
+### What worked
+
+- **Tempo single-binary on Ceph S3** — install, OBC binding, OTLP ingest
+  all clean. ~200 MiB memory steady. Pattern is identical to Loki's;
+  reviving is a copy of `loki/` with bucket name swap.
+- **OBI eBPF DaemonSet** — captures every HTTP/gRPC transaction across
+  every Go binary in scope. Day-1 visibility into per-process behavior
+  with no application changes.
+- **Grafana cross-correlation** — `derivedFields` regex on Loki to
+  Tempo, `tracesToLogsV2` Tempo → Loki, `tracesToMetrics` Tempo →
+  Prom, all worked as expected once the datasources were provisioned.
+
+### What didn't
+
+- **End-to-end traces across services without app SDK.** The premise
+  for OBI was "zero-code distributed traces." In practice, OBI v0.8's
+  context propagation feature (`ebpf.context_propagation: all`) had
+  almost no effect on argocd specifically because argocd's gRPC client
+  is built with a Go runtime / library combo OBI doesn't have stable
+  uprobe patterns for. Each argocd request became its own 1-span "trace"
+  with no parent linkage to argocd-repo-server, kube-apiserver, etc.
+- **Resource cost.** OBI on busy nodes hit memory + CPU limits hard.
+  Initial 512Mi/500m caused OOMKilled on worker-01 within 2 min;
+  bumped to 1.5Gi/1.5 CPU. Six DaemonSet pods × ~250-500Mi steady is
+  meaningful overhead on this cluster.
+- **The learning curve.** Tracing is a multi-week deep-dive on its own
+  (context propagation, sampling, span semantics, resource detection,
+  cardinality discipline, SDK wiring). Bolting it on at the end of an
+  infra session doesn't teach the fundamentals.
+
+### Reviving — what to do differently
+
+When you come back to this:
+
+1. **Skip OBI as the first trace producer.** It's powerful but requires
+   knowing where it shines (Go HTTP, simple flows) vs where it doesn't
+   (gRPC across enterprise apps like argocd). Start instead with
+   **manual SDK instrumentation on a workload you own** (`chat-app` —
+   Phase B8 in the original plan). That builds the propagation
+   intuition. Layer OBI in afterward as a visibility-broadening tool.
+2. **Land Tempo right before instrumenting that first app**, not
+   weeks ahead. Empty backends invite drift in the chart pin and the
+   storage class config.
+3. **Read first.** Start with the W3C `traceparent` spec
+   (https://www.w3.org/TR/trace-context/), then the OTel concepts
+   doc (https://opentelemetry.io/docs/concepts/), then SDK
+   auto-instrumentation guides for whatever language `chat-app` uses.
+4. **Plan for cardinality and cost** before turning anything on.
+   Trace volume × span attribute count is what eats Tempo storage and
+   ingester CPU. Define a sampling strategy in the SDK config from
+   day one.
+
+### Cleanup state (2026-05-03)
+
+- ArgoCD Applications `obi` and `tempo` deleted (finalizers stripped first).
+- DaemonSets, StatefulSets, Services, ConfigMaps, RBAC for both: gone.
+- Tempo OBC + emitted ConfigMap/Secret + cluster-scoped ObjectBucket: gone.
+- The Ceph bucket itself (`tempo-storage-9af81012-...`) is orphaned in
+  RGW — same housekeeping shape as the orphaned `loki-storage-c1621495-...`
+  from the 2026-05-02 RBAC incident. Cleanup via `radosgw-admin bucket rm`
+  in the rook toolbox at any quiet moment.
+- Repo dirs `agents/obi/` and `tracing/tempo/` removed; empty
+  `tracing/` and `agents/` parent dirs also pruned.
+- Tempo datasource removed from kube-prom-stack values; Loki datasource
+  retained.

@@ -1,0 +1,25 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Raw-manifest pattern (NOT Kustomize-wraps-Helm) — same shape as apps/homepage/.
+# The controller has no official helm chart; the canonical manifests live in
+# the controller repo's deploy/ directory and are pulled in as a remote
+# kustomize base so this overlay stays thin.
+#
+# Pinning: targeting `main` matches the home-lab's own `targetRevision: main`.
+# Once the controller publishes a tagged release, switch this to ?ref=vX.Y.Z
+# and the `images:` tag below to a SHA so deploys are immutable.
+
+resources:
+  - github.com/TruongHoangPhuLoc/kubelet-serving-csr-approver//deploy?ref=main
+
+# Image override. The controller's deploy/deployment.yaml ships with `:latest`;
+# we pin to a digest/tag here so the home-lab cluster gets a reproducible
+# rollout instead of "whatever :latest happened to mean at pod start."
+#
+# After every successful CI build on the controller repo, copy the
+# `sha-<short>` tag from `ghcr.io/truonghoangphuloc/kubelet-serving-csr-approver`
+# into newTag below and commit. ArgoCD will pick up the change on next sync.
+images:
+  - name: ghcr.io/truonghoangphuloc/kubelet-serving-csr-approver
+    newTag: sha-a3c6323

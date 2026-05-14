@@ -22,4 +22,4 @@ resources:
 # into newTag below and commit. ArgoCD will pick up the change on next sync.
 images:
   - name: ghcr.io/truonghoangphuloc/kubelet-serving-csr-approver
-    newTag: sha-a3c6323
+    newTag: sha-cbc4434

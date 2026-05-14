@@ -8,6 +8,13 @@ A single-purpose controller that auto-approves
 preserving the safety property that no kubelet can request a serving cert
 with SANs that don't match its real identity.
 
+**Full operator guide** —
+[`docs/usage.md`](https://github.com/TruongHoangPhuLoc/kubelet-serving-csr-approver/blob/main/docs/usage.md)
+in the controller repo covers install, kubelet config, CSR inspection,
+cert validation, denial reasons, troubleshooting, upgrade/rollback, and
+the security model. This README only covers the home-lab–specific bits:
+how this Application is wired and where the home-lab–specific knobs are.
+
 ## Component shape
 
 Raw-manifest pattern — same as `apps/homepage/`. There is no helm chart;

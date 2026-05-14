@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: system
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: |
+    Cluster-system controllers and cluster-internal automation that
+    runs alongside the control plane in kube-system. Currently holds
+    kubelet-csr-approver. Add other cluster-scoped tools here as
+    they're adopted (descheduler, koordinator, …).
+
+  # Permissive sourceRepos to match the observability project's style;
+  # tighten if the threat model ever calls for it.
+  sourceRepos:
+    - '*'
+
+  # The hard guardrail: an Application in this project can only deploy
+  # into kube-system. A misconfigured destination.namespace catches as
+  # OutOfSync instead of silently leaking resources elsewhere.
+  destinations:
+    - namespace: kube-system
+      server: https://kubernetes.default.svc
+
+  # ClusterRole + ClusterRoleBinding are required by kubelet-csr-approver
+  # (CSR/approval verbs + signers approve permission for the kubelet-serving
+  # signer). Keep this permissive during adoption; revisit once we know
+  # the full set of cluster-scoped resources system components install.
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'

@@ -6,16 +6,16 @@ metadata:
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
-  project: default
+  project: system
   source:
     repoURL: https://github.com/TruongHoangPhuLoc/home-lab.git
     targetRevision: main
-    path: platform/kubelet-csr-approver
+    path: platform/system/kubelet-csr-approver
     plugin:
       name: ksops
   destination:
     server: https://kubernetes.default.svc
-    namespace: kubelet-csr-approver
+    namespace: kube-system
   syncPolicy:
     # Conservative defaults during adoption — flip to true in a SEPARATE
     # commit once 2–3 sync cycles run cleanly (per platform/CLAUDE.md rule 5).
@@ -24,7 +24,6 @@ spec:
       selfHeal: false
     syncOptions:
       - ServerSideApply=true
-      # The Namespace is shipped by deploy/namespace.yaml, so ArgoCD doesn't
-      # need to create one. Keep this false to match the surrounding pattern.
+      # kube-system always exists; nothing to create.
       - CreateNamespace=false
       - RespectIgnoreDifferences=true

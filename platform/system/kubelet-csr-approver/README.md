@@ -44,8 +44,8 @@ storm of pending CSRs followed by approvals as nodes restart.
 ## Verifying it works
 
 ```bash
-kubectl --context home-cluster -n kubelet-csr-approver get pods
-kubectl --context home-cluster -n kubelet-csr-approver logs -l app.kubernetes.io/name=kubelet-csr-approver
+kubectl --context home-cluster -n kube-system get pods -l app.kubernetes.io/name=kubelet-csr-approver
+kubectl --context home-cluster -n kube-system logs -l app.kubernetes.io/name=kubelet-csr-approver
 
 # List recent kubelet-serving CSRs and their decision conditions:
 kubectl --context home-cluster get csr \
@@ -89,3 +89,20 @@ repo for the exact rules. Summary:
   (authorize approval *only* for this signer)
 
 Anything broader than this is a bug — flag and fix.
+
+## ArgoCD project
+
+This Application is scoped to the `system` AppProject (defined in
+[`../project.yaml`](../project.yaml)). The project guardrails:
+
+- Destination is locked to `kube-system`. A misconfigured
+  `destination.namespace` shows up as OutOfSync instead of leaking
+  resources into another namespace.
+- ClusterRole / ClusterRoleBinding installs are permitted (the controller
+  legitimately needs cluster-scoped RBAC for CSRs and signers).
+
+Apply the project once before the first Application sync:
+
+```bash
+kubectl --context home-cluster apply -f platform/system/project.yaml
+```
